@@ -1,0 +1,294 @@
+.schools-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(119, 0, 143, 0.08);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(119, 0, 143, 0.06);
+  animation: slideIn 200ms ease-in-out;
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(119, 0, 143, 0.1);
+  border-top-color: #7700aa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+  color: rgba(119, 0, 143, 0.3);
+  stroke-width: 1.5;
+}
+
+.empty-state h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 700;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.schools-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.school-item {
+  padding: 18px 20px;
+  transition: all 150ms ease-in-out;
+}
+
+.school-item.has-border {
+  border-bottom: 1px solid rgba(119, 0, 143, 0.08);
+}
+
+.school-item:hover {
+  background: rgba(119, 0, 143, 0.02);
+}
+
+.school-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.school-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7700aa, #a14dc4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(119, 0, 143, 0.2);
+}
+
+.school-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.school-name {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1c1021;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.school-email {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.school-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badges-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-active {
+  background: #e6f7e6;
+  color: #2d5d2d;
+}
+
+.badge-inactive {
+  background: #f0e6e6;
+  color: #5d2d2d;
+}
+
+.badge-success {
+  background: #e6f7e6;
+  color: #2d5d2d;
+}
+
+.badge-warning {
+  background: #fff4e6;
+  color: #8b6d00;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 150ms ease-in-out;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-view {
+  color: #7700aa;
+}
+
+.action-view:hover {
+  background: rgba(119, 0, 143, 0.1);
+}
+
+.action-edit {
+  color: #006600;
+}
+
+.action-edit:hover {
+  background: rgba(0, 102, 0, 0.1);
+}
+
+.action-delete {
+  color: #cc0000;
+}
+
+.action-delete:hover {
+  background: rgba(204, 0, 0, 0.1);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+.schools-footer {
+  padding: 12px 20px;
+  background: #f9f4fb;
+  border-top: 1px solid rgba(119, 0, 143, 0.08);
+  color: #666;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .school-item {
+    padding: 14px 16px;
+  }
+
+  .school-header {
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .school-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .school-name {
+    font-size: 0.95rem;
+  }
+
+  .school-email {
+    font-size: 0.8rem;
+  }
+
+  .school-footer {
+    gap: 10px;
+  }
+
+  .badges-group {
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+
+  .action-btn {
+    font-size: 0.9rem;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .school-item {
+    padding: 12px 14px;
+  }
+
+  .school-name {
+    font-size: 0.9rem;
+  }
+
+  .school-email {
+    font-size: 0.75rem;
+  }
+
+  .school-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .badges-group {
+    width: 100%;
+  }
+}

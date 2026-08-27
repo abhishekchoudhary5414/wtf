@@ -1,0 +1,247 @@
+.coach-account-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.toast-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.toast-banner.success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.toast-banner.error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.account-card {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 28px;
+}
+
+.card-header-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.header-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(119, 0, 143, 0.08);
+  color: #7700aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-text h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #101828;
+  margin: 0 0 4px 0;
+}
+
+.header-text p {
+  font-size: 0.875rem;
+  color: #667085;
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+}
+
+.field-group input,
+.field-group select {
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #d0d5dd;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  color: #101828;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-color: #7700aa;
+  box-shadow: 0 0 0 4px rgba(119, 0, 143, 0.08);
+}
+
+.field-group input.readonly-input {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #e9ecef;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.toggle-pwd-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #667085;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.password-strength-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.strength-bar {
+  height: 6px;
+  flex: 1;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.strength-bar.weak { background-color: #ef4444; }
+.strength-bar.good { background-color: #f59e0b; }
+.strength-bar.strong { background-color: #10b981; }
+
+.strength-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.strength-label.text-weak { color: #ef4444; }
+.strength-label.text-good { color: #f59e0b; }
+.strength-label.text-strong { color: #10b981; }
+
+.password-requirements {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.password-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.password-requirements li::before {
+  content: '○';
+  color: #9ca3af;
+}
+
+.password-requirements li.met {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.password-requirements li.met::before {
+  content: '✓';
+  color: #10b981;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f4f7;
+}
+
+.btn-primary {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 10px;
+  background: #7700aa;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #344054;
+  font-weight: 600;
+  border: 1px solid #d0d5dd;
+  cursor: pointer;
+}

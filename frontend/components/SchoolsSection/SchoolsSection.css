@@ -1,0 +1,127 @@
+.schools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.schools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(119, 0, 143, 0.1);
+}
+
+.schools-title h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #1c1021;
+  font-weight: 700;
+}
+
+.schools-title .subtitle {
+  margin: 6px 0 0 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.btn-add-school {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7700aa, #a14dc4);
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+  box-shadow: 0 4px 15px rgba(119, 0, 143, 0.2);
+}
+
+.btn-add-school:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(119, 0, 143, 0.3);
+}
+
+.btn-add-school:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #7700aa, #a14dc4);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 500;
+  animation: slideIn 200ms ease-in-out;
+}
+
+.alert-success {
+  background: #e6f7e6;
+  color: #2d5d2d;
+  border: 1px solid rgba(45, 93, 45, 0.2);
+}
+
+.alert-error {
+  background: #fde6e6;
+  color: #8b3a3a;
+  border: 1px solid rgba(139, 58, 58, 0.2);
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .schools-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-add-school {
+    width: 100%;
+  }
+
+  .schools-title h2 {
+    font-size: 1.5rem;
+  }
+}
