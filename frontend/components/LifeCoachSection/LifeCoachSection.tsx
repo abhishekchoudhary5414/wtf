@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Delete, Visibility, Close } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import './LifeCoachSection.css';
 
 type LifeCoach = {
@@ -133,6 +135,9 @@ export default function LifeCoachSection() {
 
       if (response.ok) {
         setCoaches((prev) => prev.filter((c) => c.id !== coachId));
+        if (selectedCoach?.id === coachId) {
+          setSelectedCoach(null);
+        }
         showToast('success', `✓ Life Coach "${coachName}" deleted successfully`);
       } else {
         const errData = await response.json().catch(() => ({}));
@@ -142,6 +147,109 @@ export default function LifeCoachSection() {
       showToast('error', 'Failed to delete Life Coach');
     }
   };
+
+  if (selectedCoach) {
+    const coach = selectedCoach;
+    return (
+      <div className="lifecoach-section">
+        <div className="detail-view-card">
+          <div className="detail-view-header">
+            <div>
+              <button className="btn-back-list" onClick={() => setSelectedCoach(null)}>
+                <ArrowBackIcon fontSize="small" /> Back to Life Coaches List
+              </button>
+              <div className="coach-brand-title" style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div className="coach-avatar-circle" style={{ width: 48, height: 48, fontSize: '1.4rem' }}>
+                  {coach.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.6rem', color: '#2b003d' }}>{coach.name}</h2>
+                  <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '0.92rem' }}>
+                    Life Coach Profile & Institutional Credentials
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="btn-delete-coach"
+              onClick={() => handleDeleteCoach(coach.id, coach.name)}
+            >
+              <DeleteIcon fontSize="small" /> Delete Life Coach
+            </button>
+          </div>
+
+          <div className="detail-view-body">
+            {/* Life Coach Personal & Account Info */}
+            <div className="detail-section-box">
+              <h3>Life Coach Personal & Account Information</h3>
+              <div className="detail-grid-expanded">
+                <div className="detail-item">
+                  <span className="label">Life Coach ID</span>
+                  <strong className="value">#{coach.id}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Full Name</span>
+                  <strong className="value">{coach.name}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Email Address</span>
+                  <strong className="value">{coach.email}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Phone Number</span>
+                  <strong className="value">{coach.phone || 'N/A'}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Gender</span>
+                  <strong className="value">{coach.gender || 'N/A'}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Account Status</span>
+                  <strong className="value">
+                    <span className={`badge-tag ${coach.is_active ? 'active' : 'inactive'}`}>
+                      {coach.is_active ? '✓ Active' : '✗ Inactive'}
+                    </span>
+                  </strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Live Profile Visibility</span>
+                  <strong className="value">
+                    <span className={`badge-tag ${coach.is_live ? 'active' : 'inactive'}`}>
+                      {coach.is_live ? '✓ Live' : 'Hidden'}
+                    </span>
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Affiliated School Info */}
+            <div className="detail-section-box">
+              <h3>Affiliated School Information</h3>
+              <div className="detail-grid-expanded">
+                <div className="detail-item">
+                  <span className="label">School ID</span>
+                  <strong className="value">#{coach.school_id}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">School Name</span>
+                  <strong className="value">{coach.school_name || 'N/A'}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">School Email</span>
+                  <strong className="value">{coach.school_email || 'N/A'}</strong>
+                </div>
+                <div className="detail-item">
+                  <span className="label">School Phone</span>
+                  <strong className="value">{coach.school_phone || 'N/A'}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lifecoach-section">
@@ -288,14 +396,14 @@ export default function LifeCoachSection() {
                         title="View Life Coach Details"
                         onClick={() => setSelectedCoach(c)}
                       >
-                        <Visibility fontSize="small" />
+                        <VisibilityIcon fontSize="small" /> Details
                       </button>
                       <button
                         className="btn-delete-icon"
                         title="Delete Life Coach"
                         onClick={() => handleDeleteCoach(c.id, c.name)}
                       >
-                        <Delete fontSize="small" />
+                        <DeleteIcon fontSize="small" /> Delete
                       </button>
                     </div>
                   </td>
@@ -305,96 +413,6 @@ export default function LifeCoachSection() {
           </table>
         )}
       </div>
-
-      {/* Details Popup Modal */}
-      {selectedCoach && (
-        <div className="modal-overlay" onClick={() => setSelectedCoach(null)}>
-          <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header-row">
-              <div className="modal-header-info">
-                <div className="coach-avatar-circle" style={{ width: 44, height: 44, fontSize: '1.2rem' }}>
-                  {selectedCoach.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#101828' }}>{selectedCoach.name}</h3>
-                  <span style={{ fontSize: '0.82rem', color: '#667085' }}>Role ID: {selectedCoach.role_id || 3} (Life Coach)</span>
-                </div>
-              </div>
-              <button className="modal-close-btn" onClick={() => setSelectedCoach(null)}>
-                <Close />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div>
-                <h4 className="modal-section-title">Life Coach Details</h4>
-                <div className="detail-grid">
-                  <div className="detail-item">
-                    <span className="label">Full Name</span>
-                    <span className="value">{selectedCoach.name}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Email Address</span>
-                    <span className="value">{selectedCoach.email}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Phone Number</span>
-                    <span className="value">{selectedCoach.phone || 'N/A'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Gender</span>
-                    <span className="value">{selectedCoach.gender || 'N/A'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Account Status</span>
-                    <span className="value" style={{ color: selectedCoach.is_active ? '#047857' : '#b91c1c' }}>
-                      {selectedCoach.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Live Status</span>
-                    <span className="value" style={{ color: selectedCoach.is_live ? '#047857' : '#b91c1c' }}>
-                      {selectedCoach.is_live ? 'Live' : 'Draft'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="modal-section-title">Affiliated School Details</h4>
-                <div className="detail-grid">
-                  <div className="detail-item">
-                    <span className="label">School ID</span>
-                    <span className="value">{selectedCoach.school_id}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">School Name</span>
-                    <span className="value">{selectedCoach.school_name || 'N/A'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">School Email</span>
-                    <span className="value">{selectedCoach.school_email || 'N/A'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">School Phone</span>
-                    <span className="value">{selectedCoach.school_phone || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer-row">
-              <button
-                className="btn-add-coach"
-                style={{ padding: '8px 18px', fontSize: '0.9rem' }}
-                onClick={() => setSelectedCoach(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

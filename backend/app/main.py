@@ -489,11 +489,18 @@ def create_school(payload: SchoolCreate, db: Session = Depends(get_db), current_
         name=payload.name,
         email=payload.email,
         phone=payload.phone,
+        profile_url=payload.profile_url,
         type=payload.type,
         established=payload.established,
         principal_name=payload.principal_name,
         principal_email=payload.principal_email,
         principal_phone=payload.principal_phone,
+        address_line_1=payload.address_line_1,
+        address_line_2=payload.address_line_2,
+        city=payload.city,
+        state=payload.state,
+        postal_code=payload.postal_code,
+        country=payload.country,
         is_live=True,
     )
     db.add(school)

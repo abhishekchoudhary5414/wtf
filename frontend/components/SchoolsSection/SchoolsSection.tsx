@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getToken } from '@/lib/api';
-import SchoolForm from './SchoolForm';
+import SchoolForm, { type SchoolFormData } from './SchoolForm';
 import SchoolsTable from './SchoolsTable';
 import './SchoolsSection.css';
 
@@ -10,6 +10,19 @@ type School = {
   id: number;
   name: string;
   email: string;
+  profile_url?: string;
+  type?: string;
+  phone?: string;
+  established?: string;
+  principal_name?: string;
+  principal_email?: string;
+  principal_phone?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
   is_active: boolean;
   is_locked?: boolean;
 };
@@ -52,7 +65,7 @@ export default function SchoolsSection() {
     }
   };
 
-  const handleAddSchool = async (schoolData: { name: string; email: string }) => {
+  const handleAddSchool = async (schoolData: SchoolFormData) => {
     try {
       const token = getToken();
       if (!token) return;

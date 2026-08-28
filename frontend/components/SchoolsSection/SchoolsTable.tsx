@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import SchoolDetailsModal from './SchoolDetailsModal';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import './SchoolsTable.css';
 
 type School = {
@@ -34,6 +36,19 @@ export default function SchoolsTable({
 }: SchoolsTableProps) {
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
+  if (selectedSchool) {
+    return (
+      <SchoolDetailsModal
+        school={selectedSchool}
+        onClose={() => setSelectedSchool(null)}
+        onDelete={(id, name) => {
+          onDelete(id, name);
+          setSelectedSchool(null);
+        }}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="schools-card">
@@ -65,68 +80,60 @@ export default function SchoolsTable({
   }
 
   return (
-    <>
-      <div className="schools-card">
-        <div className="schools-list">
-          {schools.map((school, index) => (
-            <div key={school.id} className={`school-item ${index !== schools.length - 1 ? 'has-border' : ''}`}>
-              <div
-                className="school-header"
-                style={{ cursor: 'pointer' }}
-                onClick={() => setSelectedSchool(school)}
-              >
-                <div className="school-avatar">{school.name.charAt(0).toUpperCase()}</div>
-                <div className="school-main">
-                  <h3 className="school-name">{school.name}</h3>
-                  <p className="school-email">{school.email}</p>
-                </div>
-              </div>
-              
-              <div className="school-footer">
-                <div className="badges-group">
-                  <span className={`badge badge-${school.is_active ? 'active' : 'inactive'}`}>
-                    {school.is_active ? '✓ Active' : '✗ Inactive'}
-                  </span>
-                  {school.is_locked && (
-                    <span className="badge badge-warning">
-                      🔒 Locked
-                    </span>
-                  )}
-                </div>
-                
-                <div className="actions">
-                  <button
-                    className="action-btn action-view"
-                    title="View school details popup"
-                    onClick={() => setSelectedSchool(school)}
-                  >
-                    👁
-                  </button>
-                  <button 
-                    className="action-btn action-delete" 
-                    title="Delete"
-                    onClick={() => onDelete(school.id, school.name)}
-                  >
-                    🗑
-                  </button>
-                </div>
+    <div className="schools-card">
+      <div className="schools-list">
+        {schools.map((school, index) => (
+          <div key={school.id} className={`school-item ${index !== schools.length - 1 ? 'has-border' : ''}`}>
+            <div
+              className="school-header"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setSelectedSchool(school)}
+            >
+              <div className="school-avatar">{school.name.charAt(0).toUpperCase()}</div>
+              <div className="school-main">
+                <h3 className="school-name">{school.name}</h3>
+                <p className="school-email">{school.email}</p>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="schools-footer">
-          <small>Total: {schools.length} school{schools.length !== 1 ? ' accounts' : ' account'}</small>
-        </div>
+            <div className="school-footer">
+              <div className="badges-group">
+                <span className={`badge badge-${school.is_active ? 'active' : 'inactive'}`}>
+                  {school.is_active ? '✓ Active' : '✗ Inactive'}
+                </span>
+                {school.is_locked && (
+                  <span className="badge badge-warning">
+                    🔒 Locked
+                  </span>
+                )}
+              </div>
+
+              <div className="actions">
+                <button
+                  className="action-btn action-view"
+                  title="View full school details"
+                  onClick={() => setSelectedSchool(school)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
+                  <VisibilityIcon fontSize="small" /> 
+                </button>
+                <button
+                  className="action-btn action-delete"
+                  title="Delete school"
+                  onClick={() => onDelete(school.id, school.name)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
+                  <DeleteIcon fontSize="small" /> 
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* School Details Popup Modal */}
-      {selectedSchool && (
-        <SchoolDetailsModal
-          school={selectedSchool}
-          onClose={() => setSelectedSchool(null)}
-        />
-      )}
-    </>
+      <div className="schools-footer">
+        <small>Total: {schools.length} school{schools.length !== 1 ? ' accounts' : ' account'}</small>
+      </div>
+    </div>
   );
 }

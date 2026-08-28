@@ -68,11 +68,18 @@ class SchoolCreate(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None
+    profile_url: Optional[str] = None
     type: Optional[str] = None
     established: Optional[str] = None
     principal_name: Optional[str] = None
     principal_email: Optional[EmailStr] = None
     principal_phone: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
 
 
 class SchoolLoginRequest(BaseModel):
@@ -93,6 +100,12 @@ class SchoolResponse(BaseModel):
     principal_name: Optional[str] = None
     principal_email: Optional[str] = None
     principal_phone: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
     is_live: bool = True
     is_active: bool = True
     is_locked: bool = False
