@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Menu, Close, Logout, Home, School, MedicalServices, Psychology, ManageAccounts } from '@mui/icons-material';
 import SchoolAccountSection from '@/components/SchoolAccountSection/SchoolAccountSection';
 import LifeCoachSection from '@/components/LifeCoachSection/LifeCoachSection';
+import SchoolTherapistsSection from '@/components/TherapistsSection/SchoolTherapistsSection';
 import './dashboard.css';
 
 type SchoolData = {
@@ -280,10 +281,7 @@ export default function SchoolDashboardPage() {
             )}
 
             {activeSection === 'therapist' && (
-              <section className="section-card">
-                <h2>Therapists Section</h2>
-                <p style={{ color: '#6b7280' }}>Healthcare specialists and mental wellness therapists affiliated with this school.</p>
-              </section>
+              <SchoolTherapistsSection />
             )}
 
             {activeSection === 'account' && (

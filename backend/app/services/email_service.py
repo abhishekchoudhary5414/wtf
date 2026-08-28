@@ -223,3 +223,165 @@ def send_life_coach_credentials_email(
     except Exception as e:
         logger.error(f"Failed to send Life Coach credentials email to {coach_email}: {str(e)}")
         return False
+
+
+def send_therapist_invite_email(
+    therapist_name: str,
+    therapist_email: str,
+    school_name: str,
+    school_email: str,
+    register_url: str,
+) -> bool:
+    """Send an invitation email to a therapist invited by a school."""
+    sender_email = "workthroughfrustration@gmail.com"
+    try:
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Therapist Registration Invitation - Work Through Frustration</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; }}
+                .header {{ background: #7700aa; color: white; padding: 20px; text-align: center; }}
+                .content {{ background: white; padding: 20px; margin-top: 10px; border-radius: 5px; }}
+                .credentials {{ background: #f0f0f0; padding: 15px; border-left: 4px solid #7700aa; margin: 20px 0; }}
+                .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
+                strong {{ color: #7700aa; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Work Through Frustration</h1>
+                </div>
+                <div class="content">
+                    <h2>Therapist Registration Invitation</h2>
+                    <p>Hello <strong>{therapist_name}</strong>,</p>
+                    <p>You have been invited by <strong>{school_name}</strong> ({school_email}) to complete your Therapist Registration profile on Work Through Frustration.</p>
+                    
+                    <div class="credentials">
+                        <p><strong>Invited By School:</strong> {school_name}</p>
+                        <p><strong>School Email:</strong> {school_email}</p>
+                        <p><strong>Registration Link:</strong> <a href="{register_url}" style="color: #7700aa; font-weight: bold;">{register_url}</a></p>
+                    </div>
+                    
+                    <p style="text-align: center; margin: 24px 0;">
+                        <a href="{register_url}" style="display: inline-block; background: #7700aa; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Therapist Registration</a>
+                    </p>
+
+                    <p>Upon completing your profile, your application will be submitted to the Admin for approval. Once approved, login credentials will be dispatched to your email.</p>
+                    
+                    <p>Best regards,<br/>The WTF Team</p>
+                </div>
+                <div class="footer">
+                    <p>Sent from workthroughfrustration@gmail.com. Please do not reply directly to this automated email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        msg = MIMEMultipart()
+        msg['From'] = settings.SMTP_FROM or sender_email
+        msg['To'] = therapist_email
+        msg['Subject'] = f"Therapist Registration Invitation from {school_name}"
+        msg.attach(MIMEText(html_content, 'html'))
+
+        if settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+            if settings.SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT)
+            else:
+                server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+                server.starttls()
+            server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+
+        logger.info(f"Therapist invitation email sent to {therapist_email} for school {school_name}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send Therapist invitation email to {therapist_email}: {str(e)}")
+        return False
+
+
+def send_therapist_approval_credentials_email(
+    therapist_name: str,
+    therapist_email: str,
+    temporary_password: str,
+    login_url: str = "http://localhost:3000/therapist/login",
+) -> bool:
+    """Send approval notice with login credentials to an approved Therapist."""
+    sender_email = "workthroughfrustration@gmail.com"
+    try:
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Therapist Account Approved - Work Through Frustration</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; }}
+                .header {{ background: #7700aa; color: white; padding: 20px; text-align: center; }}
+                .content {{ background: white; padding: 20px; margin-top: 10px; border-radius: 5px; }}
+                .credentials {{ background: #ecfdf5; padding: 15px; border-left: 4px solid #047857; margin: 20px 0; }}
+                .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
+                strong {{ color: #7700aa; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Work Through Frustration</h1>
+                </div>
+                <div class="content">
+                    <h2 style="color: #047857;">🎉 Therapist Account Approved!</h2>
+                    <p>Hello <strong>{therapist_name}</strong>,</p>
+                    <p>Congratulations! Your Therapist application has been reviewed and <strong>APPROVED</strong> by the platform Administrator.</p>
+                    
+                    <div class="credentials">
+                        <p><strong>Login URL:</strong> <a href="{login_url}" style="color: #7700aa; font-weight: bold;">{login_url}</a></p>
+                        <p><strong>Username / Email:</strong> {therapist_email}</p>
+                        <p><strong>Temporary Password:</strong> {temporary_password}</p>
+                    </div>
+                    
+                    <p><strong>⚠️ IMPORTANT:</strong> Please log in to your Therapist Portal and update your password after initial login.</p>
+                    
+                    <p style="text-align: center; margin: 24px 0;">
+                        <a href="{login_url}" style="display: inline-block; background: #7700aa; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Therapist Portal</a>
+                    </p>
+
+                    <p>Best regards,<br/>The WTF Team</p>
+                </div>
+                <div class="footer">
+                    <p>Sent from workthroughfrustration@gmail.com. Please do not reply directly to this automated email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        msg = MIMEMultipart()
+        msg['From'] = settings.SMTP_FROM or sender_email
+        msg['To'] = therapist_email
+        msg['Subject'] = "Your Therapist Account Has Been Approved"
+        msg.attach(MIMEText(html_content, 'html'))
+
+        if settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+            if settings.SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT)
+            else:
+                server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+                server.starttls()
+            server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+
+        logger.info(f"Therapist approval credentials email sent to {therapist_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send Therapist approval email to {therapist_email}: {str(e)}")
+        return False
+

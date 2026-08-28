@@ -1,6 +1,6 @@
 import re
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
-from typing import Optional
+from typing import Optional, List, Union
 
 
 class AdminRegistrationRequest(BaseModel):
@@ -173,6 +173,223 @@ class TokenData(BaseModel):
 
 class PasswordHashRequest(BaseModel):
     password: str
+
+
+# Master Dropdown Schemas
+class DropdownOptionCreate(BaseModel):
+    category: str
+    value: str
+
+
+class DropdownOptionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    category: str
+    value: str
+    is_active: bool
+
+
+class SchoolTherapistInviteRequest(BaseModel):
+    email: EmailStr
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    name: Optional[str] = None
+
+
+class TherapistRegistrationRequest(BaseModel):
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    mobile_number: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+
+    # Professional Info
+    professional_title: Optional[str] = None
+    therapist_type: Optional[str] = None
+    professional_biography: Optional[str] = None
+    bio: Optional[str] = None
+    years_of_experience: Optional[Union[int, str]] = None
+    primary_specialization: Optional[str] = None
+    additional_specialization: Optional[str] = None
+    additional_specializations: Optional[str] = None
+    language_spoken: Optional[str] = None
+    languages_spoken: Optional[str] = None
+
+    # School Association
+    is_school_associated: Optional[bool] = False
+    is_associated_with_school: Optional[bool] = False
+    invite_token: Optional[str] = None
+    school_id: Optional[int] = None
+    school_name: Optional[str] = None
+    school_email: Optional[str] = None
+    school_phone: Optional[str] = None
+
+    # Professional License
+    license_type: Optional[str] = None
+    license_number: Optional[str] = None
+    licensing_state: Optional[str] = None
+    license_issued_date: Optional[str] = None
+    license_expiration_date: Optional[str] = None
+    license_document_url: Optional[str] = None
+
+    # NPI
+    has_npi: Optional[bool] = False
+    npi_number: Optional[str] = None
+    npi_type: Optional[str] = None
+    provider_taxonomy: Optional[str] = None
+
+    # Education
+    highest_qualification: Optional[str] = None
+    degree_name: Optional[str] = None
+    field_of_study: Optional[str] = None
+    university_institution: Optional[str] = None
+    university_name: Optional[str] = None
+    graduation_year: Optional[str] = None
+    degree_document_url: Optional[str] = None
+
+    # Insurance & Billing
+    accepts_insurance: Optional[bool] = False
+    insurance_types: Optional[Union[List[str], str]] = None
+    insurance_providers: Optional[Union[List[str], str]] = None
+    accepts_online_payment: Optional[bool] = False
+    has_ehr: Optional[bool] = False
+    has_ehr_system: Optional[bool] = False
+    ehr_vendor: Optional[str] = None
+    ehr_vendor_name: Optional[str] = None
+    ehr_product_name: Optional[str] = None
+
+    # HIPAA & Compliance
+    handles_phi: Optional[bool] = False
+    hipaa_training_completed: Optional[bool] = False
+    hipaa_training_completion_date: Optional[str] = None
+    hipaa_completion_date: Optional[str] = None
+    malpractice_insurance_available: Optional[bool] = False
+    malpractice_insurance_expiration_date: Optional[str] = None
+    malpractice_expiration_date: Optional[str] = None
+    malpractice_document_url: Optional[str] = None
+
+
+class TherapistResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    role_id: int = 4
+    first_name: str
+    last_name: str
+    profile_url: Optional[str] = None
+    email: str
+    phone: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+
+    # Professional Info
+    professional_title: Optional[str] = None
+    therapist_type: Optional[str] = None
+    professional_biography: Optional[str] = None
+    years_of_experience: Optional[str] = None
+    primary_specialization: Optional[str] = None
+    additional_specialization: Optional[str] = None
+    language_spoken: Optional[str] = None
+
+    # School Association
+    is_school_associated: bool = False
+    school_id: Optional[int] = None
+    school_name: Optional[str] = None
+    school_email: Optional[str] = None
+    school_phone: Optional[str] = None
+
+    # Professional License
+    license_type: Optional[str] = None
+    license_number: Optional[str] = None
+    licensing_state: Optional[str] = None
+    license_issued_date: Optional[str] = None
+    license_expiration_date: Optional[str] = None
+    license_document_url: Optional[str] = None
+
+    # NPI
+    has_npi: bool = False
+    npi_number: Optional[str] = None
+    npi_type: Optional[str] = None
+    provider_taxonomy: Optional[str] = None
+
+    # Education
+    highest_qualification: Optional[str] = None
+    degree_name: Optional[str] = None
+    field_of_study: Optional[str] = None
+    university_institution: Optional[str] = None
+    graduation_year: Optional[str] = None
+    degree_document_url: Optional[str] = None
+
+    # Insurance & Billing
+    accepts_insurance: bool = False
+    insurance_types: Optional[List[str]] = None
+    accepts_online_payment: bool = False
+    has_ehr: bool = False
+    ehr_vendor: Optional[str] = None
+    ehr_product_name: Optional[str] = None
+
+    # HIPAA & Compliance
+    handles_phi: bool = False
+    hipaa_training_completed: bool = False
+    hipaa_training_completion_date: Optional[str] = None
+    malpractice_insurance_available: bool = False
+    malpractice_insurance_expiration_date: Optional[str] = None
+    malpractice_document_url: Optional[str] = None
+
+    # Approval & Status
+    approval_status: str = "pending"
+    is_live: bool = True
+    is_active: bool = True
+    is_locked: bool = False
+
+
+class TherapistLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TherapistProfileUpdateRequest(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    professional_title: Optional[str] = None
+    therapist_type: Optional[str] = None
+    professional_biography: Optional[str] = None
+    years_of_experience: Optional[str] = None
+    primary_specialization: Optional[str] = None
+    additional_specialization: Optional[str] = None
+    language_spoken: Optional[str] = None
+
+
+class TherapistPasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 
 
 class PasswordHashResponse(BaseModel):

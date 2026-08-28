@@ -59,9 +59,29 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Handle Therapist routes
+  if (pathname.startsWith('/therapist') || pathname.startsWith('/therapists')) {
+    const therapistToken = request.cookies.get('therapist_token')?.value;
+
+    if (pathname === '/therapist/login' || pathname === '/therapists/login') {
+      if (therapistToken) {
+        return NextResponse.redirect(new URL('/therapist/dashboard', request.url));
+      }
+      return NextResponse.next();
+    }
+
+    if (pathname === '/therapist/register' || pathname.startsWith('/therapist/register')) {
+      return NextResponse.next();
+    }
+
+    if (!therapistToken) {
+      return NextResponse.redirect(new URL('/therapist/login', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/schools/:path*', '/lifecoach/:path*', '/life-coaches/:path*'],
+  matcher: ['/admin/:path*', '/schools/:path*', '/lifecoach/:path*', '/life-coaches/:path*', '/therapist/:path*', '/therapists/:path*'],
 };

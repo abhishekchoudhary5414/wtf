@@ -6,6 +6,7 @@ import { authApi, getToken, type AdminAccount } from '@/lib/api';
 import { Menu, Close, Logout } from '@mui/icons-material';
 import SchoolsSection from '@/components/SchoolsSection/SchoolsSection';
 import AccountSection from '@/components/AccountSection/AccountSection';
+import AdminTherapistsSection from '@/components/TherapistsSection/AdminTherapistsSection';
 import './dashboard.css';
 
 type NavigationSection = 'overview' | 'account' | 'schools' | 'users' | 'therapists' | 'specialities';
@@ -232,12 +233,7 @@ export default function AdminDashboardPage() {
           )}
 
           {activeSection === 'therapists' && (
-            <section className="dashboard-content">
-              <div className="empty-content-message">
-                <h3>Therapists</h3>
-                <p>Therapists management section coming soon...</p>
-              </div>
-            </section>
+            <AdminTherapistsSection />
           )}
 
           {activeSection === 'specialities' && (

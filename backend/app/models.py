@@ -1,15 +1,17 @@
-from sqlalchemy import Boolean, String, Text, DateTime, func, BigInteger, SmallInteger, ForeignKey
+from sqlalchemy import Boolean, String, Text, DateTime, func, BigInteger, Integer, SmallInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 from datetime import datetime
 
 from app.database import Base
 
+BigIntID = BigInteger().with_variant(Integer, "sqlite")
+
 
 class Role(Base):
     __tablename__ = "roles"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     role_name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
@@ -20,7 +22,7 @@ class Role(Base):
 class AdminDetails(Base):
     __tablename__ = "admin_details"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, index=True)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -38,7 +40,7 @@ class AdminDetails(Base):
 class AdminLogin(Base):
     __tablename__ = "admin_login"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     admin_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("admin_details.id", ondelete="CASCADE"), nullable=False, unique=True)
     email_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -58,7 +60,7 @@ class AdminLogin(Base):
 class SchoolDetails(Base):
     __tablename__ = "school_details"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     profile_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -69,6 +71,12 @@ class SchoolDetails(Base):
     principal_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     principal_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     principal_phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    address_line_1: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    address_line_2: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    state: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    postal_code: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     is_live: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -80,7 +88,7 @@ class SchoolDetails(Base):
 class SchoolLogin(Base):
     __tablename__ = "school_login"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     school_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("school_details.id", ondelete="CASCADE"), nullable=False, unique=True)
     email_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -97,10 +105,21 @@ class SchoolLogin(Base):
     school: Mapped["SchoolDetails"] = relationship(back_populates="login")
 
 
+class MasterDropdownOption(Base):
+    __tablename__ = "master_dropdown_options"
+
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
+    category: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    value: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
 class LifeCoachDetails(Base):
     __tablename__ = "life_coach_details"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, default=3, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
@@ -123,7 +142,7 @@ class LifeCoachDetails(Base):
 class LifeCoachLogin(Base):
     __tablename__ = "life_coach_login"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
     life_coach_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("life_coach_details.id", ondelete="CASCADE"), nullable=False, unique=True)
     email_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -138,3 +157,107 @@ class LifeCoachLogin(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     life_coach: Mapped["LifeCoachDetails"] = relationship(back_populates="login")
+
+
+class TherapistDetails(Base):
+    __tablename__ = "therapist_details"
+
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
+    role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, default=4, index=True)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    profile_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    date_of_birth: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    address_line_1: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    address_line_2: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    state: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    postal_code: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    # Professional Info
+    professional_title: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    therapist_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    professional_biography: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    years_of_experience: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    primary_specialization: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    additional_specialization: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    language_spoken: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # School Association
+    is_school_associated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    school_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("school_details.id", ondelete="SET NULL"), nullable=True, index=True)
+    school_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    school_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    school_phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+
+    # Professional License
+    license_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    license_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    licensing_state: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    license_issued_date: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    license_expiration_date: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    license_document_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # NPI
+    has_npi: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    npi_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    npi_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    provider_taxonomy: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    # Education
+    highest_qualification: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    degree_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    field_of_study: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    university_institution: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    graduation_year: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    degree_document_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Insurance & Billing
+    accepts_insurance: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    insurance_types: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    accepts_online_payment: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    has_ehr: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    ehr_vendor: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    ehr_product_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    # HIPAA & Compliance
+    handles_phi: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    hipaa_training_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    hipaa_training_completion_date: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    malpractice_insurance_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    malpractice_insurance_expiration_date: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    malpractice_document_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Status & Approval
+    approval_status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    is_live: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    role: Mapped["Role"] = relationship()
+    school: Mapped[Optional["SchoolDetails"]] = relationship()
+    login: Mapped[Optional["TherapistLogin"]] = relationship(back_populates="therapist", cascade="all, delete-orphan")
+
+
+class TherapistLogin(Base):
+    __tablename__ = "therapist_login"
+
+    id: Mapped[int] = mapped_column(BigIntID, primary_key=True, autoincrement=True)
+    therapist_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("therapist_details.id", ondelete="CASCADE"), nullable=False, unique=True)
+    email_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    failed_login_attempts: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_first_time_password_changed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    password_changed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    therapist: Mapped["TherapistDetails"] = relationship(back_populates="login")

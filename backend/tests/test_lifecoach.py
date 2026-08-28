@@ -1,26 +1,39 @@
 import os
 from datetime import datetime, timezone
-
-os.environ["DATABASE_URL"] = "sqlite:///./test_lifecoach.db"
-
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, SessionLocal, engine
+from app.database import Base, get_db
 from app.main import app
 from app.models import Role, SchoolDetails, SchoolLogin, LifeCoachDetails, LifeCoachLogin
 from app.security import hash_password, create_access_token
 
+TEST_DATABASE_URL = "sqlite:///./test_lifecoach.db"
+engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def setup_module():
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    app.dependency_overrides[get_db] = override_get_db
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
-    db = SessionLocal()
+    db = TestingSessionLocal()
     try:
         role_school = Role(id=2, role_name="school", description="school role")
         role_coach = Role(id=3, role_name="life_coach", description="life coach role")
-        db.add(role_school)
-        db.add(role_coach)
+        db.add_all([role_school, role_coach])
         db.commit()
 
         # School A
@@ -51,6 +64,16 @@ def setup_module():
     finally:
         db.close()
 
+    yield
+
+    app.dependency_overrides.clear()
+    engine.dispose()
+    if os.path.exists("./test_lifecoach.db"):
+        try:
+            os.remove("./test_lifecoach.db")
+        except Exception:
+            pass
+
 
 def test_life_coach_login_locks_after_five_failed_attempts():
     client = TestClient(app)
@@ -63,7 +86,7 @@ def test_life_coach_login_locks_after_five_failed_attempts():
     assert locked_resp.status_code == 403
     assert "locked" in locked_resp.json()["detail"].lower()
 
-    db = SessionLocal()
+    db = TestingSessionLocal()
     try:
         login_record = db.query(LifeCoachLogin).filter(LifeCoachLogin.email_id == "coach.alpha@test.com").first()
         assert login_record is not None

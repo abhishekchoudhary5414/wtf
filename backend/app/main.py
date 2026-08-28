@@ -1,13 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+import os
+from fastapi import FastAPI, Depends, HTTPException, status, Request, File, UploadFile
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import logging
 from datetime import datetime, timezone, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from uuid import uuid4
+from typing import List, Optional
 
 from app.database import Base, engine, get_db
-from app.models import AdminLogin, AdminDetails, Role, SchoolDetails, SchoolLogin, LifeCoachDetails, LifeCoachLogin
+from app.models import AdminLogin, AdminDetails, Role, SchoolDetails, SchoolLogin, LifeCoachDetails, LifeCoachLogin, MasterDropdownOption, TherapistDetails, TherapistLogin
 from app.schemas import (
     AdminRegistrationRequest,
     AdminProfileResponse,
@@ -24,6 +27,14 @@ from app.schemas import (
     LifeCoachLoginRequest,
     LifeCoachProfileUpdateRequest,
     LifeCoachPasswordChangeRequest,
+    DropdownOptionCreate,
+    DropdownOptionResponse,
+    SchoolTherapistInviteRequest,
+    TherapistRegistrationRequest,
+    TherapistResponse,
+    TherapistLoginRequest,
+    TherapistProfileUpdateRequest,
+    TherapistPasswordChangeRequest,
     Token,
     PasswordHashRequest,
     PasswordHashResponse,
@@ -37,13 +48,20 @@ from app.security import (
     generate_secure_password,
     oauth2_scheme,
 )
-from app.services.email_service import send_school_credentials_email, send_life_coach_credentials_email
+from app.services.email_service import (
+    send_school_credentials_email,
+    send_life_coach_credentials_email,
+    send_therapist_invite_email,
+    send_therapist_approval_credentials_email,
+)
+from jose import JWTError, jwt
 
 
 Base.metadata.create_all(bind=engine)
 
-
+os.makedirs("uploads", exist_ok=True)
 app = FastAPI(title="WTF Backend", version="1.0.0")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 logger = logging.getLogger("wtf.backend")
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +78,23 @@ app.add_middleware(
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Upload a document or image file and return its accessible URL."""
+    os.makedirs("uploads", exist_ok=True)
+    ext = file.filename.split(".")[-1] if "." in file.filename else "bin"
+    safe_name = f"doc_{uuid4().hex[:12]}.{ext}"
+    filepath = os.path.join("uploads", safe_name)
+    with open(filepath, "wb") as buffer:
+        content = await file.read()
+        buffer.write(content)
+
+    return {
+        "url": f"http://localhost:8000/uploads/{safe_name}",
+        "filename": file.filename,
+    }
 
 
 @app.get("/.well-known/appspecific/com.chrome.devtools.json")
@@ -1052,3 +1087,777 @@ def utils_hash_password(payload: PasswordHashRequest):
     """Return bcrypt hash for a plaintext password (convenience/testing only)."""
     hashed = hash_password(payload.password)
     return {"hash": hashed}
+
+
+# Helper: Get current therapist from JWT token
+def get_current_therapist(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> TherapistDetails:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate therapist credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        if email is None or role != "therapist":
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    therapist = db.query(TherapistDetails).join(TherapistLogin).filter(
+        TherapistLogin.email_id == email,
+        TherapistLogin.is_active == True,
+    ).first()
+
+    if therapist is None:
+        raise credentials_exception
+
+    return therapist
+
+
+# ==========================================
+# MASTER DROPDOWN OPTIONS ENDPOINTS
+# ==========================================
+@app.get("/master-dropdowns/{category}", response_model=List[DropdownOptionResponse])
+def get_master_dropdown_options(category: str, db: Session = Depends(get_db)):
+    """Get active master dropdown options for a specific category."""
+    options = db.query(MasterDropdownOption).filter(
+        MasterDropdownOption.category == category,
+        MasterDropdownOption.is_active == True,
+    ).all()
+    return options
+
+
+@app.post("/admin/master-dropdowns", response_model=DropdownOptionResponse)
+def create_master_dropdown_option(
+    payload: DropdownOptionCreate,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin adds a new option to a master dropdown category."""
+    category_clean = payload.category.strip().lower()
+    val_clean = payload.value.strip()
+
+    if not val_clean:
+        raise HTTPException(status_code=400, detail="Option value cannot be empty")
+
+    existing = db.query(MasterDropdownOption).filter(
+        MasterDropdownOption.category == category_clean,
+        MasterDropdownOption.value == val_clean,
+    ).first()
+
+    if existing:
+        if not existing.is_active:
+            existing.is_active = True
+            db.commit()
+            db.refresh(existing)
+            return existing
+        return existing
+
+    new_opt = MasterDropdownOption(
+        category=category_clean,
+        value=val_clean,
+        is_active=True,
+    )
+    db.add(new_opt)
+    db.commit()
+    db.refresh(new_opt)
+    return new_opt
+
+
+@app.delete("/admin/master-dropdowns/{option_id}")
+def delete_master_dropdown_option(
+    option_id: int,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin removes a master dropdown option."""
+    opt = db.query(MasterDropdownOption).filter(MasterDropdownOption.id == option_id).first()
+    if not opt:
+        raise HTTPException(status_code=404, detail="Dropdown option not found")
+
+    opt.is_active = False
+    db.commit()
+    return {"detail": "Option removed successfully"}
+
+
+# ==========================================
+# SCHOOL THERAPIST INVITATION & LIST ENDPOINTS
+# ==========================================
+@app.post("/schools/therapists/invite")
+def invite_therapist_by_school(
+    payload: SchoolTherapistInviteRequest,
+    db: Session = Depends(get_db),
+    current_school: SchoolDetails = Depends(get_current_school),
+):
+    """School invites a Therapist by email, creating a pending profile record and sending invitation URL."""
+    email_clean = payload.email.strip().lower()
+
+    existing = db.query(TherapistDetails).filter(TherapistDetails.email == email_clean).first()
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Therapist with email {email_clean} already registered or invited.")
+
+    first_name = payload.first_name.strip() if payload.first_name else ""
+    last_name = payload.last_name.strip() if payload.last_name else ""
+
+    if not first_name and payload.name and payload.name.strip():
+        parts = payload.name.strip().split(" ", 1)
+        first_name = parts[0]
+        if len(parts) > 1:
+            last_name = parts[1]
+
+    if not first_name:
+        first_name = "Therapist"
+    if not last_name:
+        last_name = "Invited"
+
+    therapist = TherapistDetails(
+        role_id=4,
+        first_name=first_name,
+        last_name=last_name,
+        email=email_clean,
+        is_school_associated=True,
+        school_id=current_school.id,
+        school_name=current_school.name,
+        school_email=current_school.email,
+        school_phone=current_school.phone,
+        approval_status="pending",
+        is_live=True,
+    )
+    db.add(therapist)
+    db.commit()
+    db.refresh(therapist)
+
+    register_url = f"http://localhost:3000/therapist/register?invite_id={therapist.id}"
+    send_therapist_invite_email(
+        therapist_name=f"{therapist.first_name} {therapist.last_name}",
+        therapist_email=therapist.email,
+        school_name=current_school.name,
+        school_email=current_school.email,
+        register_url=register_url,
+    )
+
+    return {
+        "id": therapist.id,
+        "first_name": therapist.first_name,
+        "last_name": therapist.last_name,
+        "email": therapist.email,
+        "school_id": therapist.school_id,
+        "school_name": therapist.school_name,
+        "approval_status": therapist.approval_status,
+        "register_url": register_url,
+    }
+
+
+@app.get("/schools/therapists")
+def get_school_therapists(
+    db: Session = Depends(get_db),
+    current_school: SchoolDetails = Depends(get_current_school),
+):
+    """School gets list of therapists associated with their school."""
+    therapists = db.query(TherapistDetails).filter(
+        TherapistDetails.school_id == current_school.id
+    ).all()
+
+    results = []
+    for t in therapists:
+        results.append({
+            "id": t.id,
+            "role_id": t.role_id,
+            "first_name": t.first_name,
+            "last_name": t.last_name,
+            "email": t.email,
+            "phone": t.phone,
+            "gender": t.gender,
+            "professional_title": t.professional_title,
+            "therapist_type": t.therapist_type,
+            "is_school_associated": t.is_school_associated,
+            "school_id": t.school_id,
+            "school_name": t.school_name,
+            "approval_status": t.approval_status,
+            "is_live": t.is_live,
+            "is_active": t.login.is_active if t.login else False,
+        })
+    return results
+
+
+# ==========================================
+# PUBLIC THERAPIST REGISTRATION ENDPOINTS
+# ==========================================
+@app.get("/therapists/invite-info/{invite_id}")
+def get_therapist_invite_info(invite_id: int, db: Session = Depends(get_db)):
+    """Fetch therapist invitation details for registration form pre-filling."""
+    therapist = db.query(TherapistDetails).filter(TherapistDetails.id == invite_id).first()
+    if not therapist:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+
+    return {
+        "id": therapist.id,
+        "first_name": therapist.first_name,
+        "last_name": therapist.last_name,
+        "email": therapist.email,
+        "is_school_associated": therapist.is_school_associated,
+        "school_id": therapist.school_id,
+        "school_name": therapist.school_name,
+        "school_email": therapist.school_email,
+        "school_phone": therapist.school_phone,
+    }
+
+
+@app.post("/therapists/register")
+def register_therapist(payload: TherapistRegistrationRequest, db: Session = Depends(get_db)):
+    """Therapist submits full registration details (both individual and school-associated)."""
+    email_clean = payload.email.strip().lower()
+    existing = db.query(TherapistDetails).filter(TherapistDetails.email == email_clean).first()
+
+    if existing:
+        therapist = existing
+    else:
+        therapist = TherapistDetails(
+            role_id=4,
+            first_name=payload.first_name.strip(),
+            last_name=payload.last_name.strip(),
+            email=email_clean,
+        )
+        db.add(therapist)
+
+    # Basic Details
+    therapist.first_name = payload.first_name.strip()
+    therapist.last_name = payload.last_name.strip()
+    raw_phone = payload.mobile_number or payload.phone
+    therapist.phone = raw_phone.strip() if raw_phone else None
+    therapist.gender = payload.gender
+    therapist.date_of_birth = payload.date_of_birth
+    therapist.address_line_1 = payload.address_line_1
+    therapist.address_line_2 = payload.address_line_2
+    therapist.city = payload.city
+    therapist.state = payload.state
+    therapist.postal_code = payload.postal_code
+    therapist.country = payload.country
+
+    # Professional Info
+    therapist.professional_title = payload.professional_title
+    therapist.therapist_type = payload.therapist_type
+    therapist.professional_biography = payload.bio or payload.professional_biography
+    therapist.years_of_experience = str(payload.years_of_experience) if payload.years_of_experience is not None else None
+    therapist.primary_specialization = payload.primary_specialization
+    therapist.additional_specialization = payload.additional_specializations or payload.additional_specialization
+    therapist.language_spoken = payload.languages_spoken or payload.language_spoken
+
+    # School Association
+    is_school_assoc = payload.is_associated_with_school if payload.is_associated_with_school is not None else payload.is_school_associated
+    therapist.is_school_associated = bool(is_school_assoc)
+    if is_school_assoc:
+        therapist.school_id = payload.school_id
+        therapist.school_name = payload.school_name
+        therapist.school_email = payload.school_email
+        therapist.school_phone = payload.school_phone
+    else:
+        therapist.school_id = None
+        therapist.school_name = None
+        therapist.school_email = None
+        therapist.school_phone = None
+
+    # License
+    therapist.license_type = payload.license_type
+    therapist.license_number = payload.license_number
+    therapist.licensing_state = payload.licensing_state
+    therapist.license_issued_date = payload.license_issued_date
+    therapist.license_expiration_date = payload.license_expiration_date
+    therapist.license_document_url = payload.license_document_url
+
+    # NPI
+    has_npi_val = bool(payload.has_npi)
+    therapist.has_npi = has_npi_val
+    therapist.npi_number = payload.npi_number if has_npi_val else None
+    therapist.npi_type = payload.npi_type if has_npi_val else None
+    therapist.provider_taxonomy = payload.provider_taxonomy if has_npi_val else None
+
+    # Education
+    therapist.highest_qualification = payload.highest_qualification
+    therapist.degree_name = payload.degree_name
+    therapist.field_of_study = payload.field_of_study
+    therapist.university_institution = payload.university_name or payload.university_institution
+    therapist.graduation_year = payload.graduation_year
+    therapist.degree_document_url = payload.degree_document_url
+
+    # Insurance & Billing
+    accepts_ins_val = bool(payload.accepts_insurance)
+    therapist.accepts_insurance = accepts_ins_val
+    import json
+    ins_raw = payload.insurance_providers or payload.insurance_types
+    if isinstance(ins_raw, list):
+        therapist.insurance_types = json.dumps(ins_raw)
+    elif isinstance(ins_raw, str):
+        therapist.insurance_types = ins_raw
+    else:
+        therapist.insurance_types = None
+    therapist.accepts_online_payment = bool(payload.accepts_online_payment)
+    has_ehr_val = bool(payload.has_ehr_system if payload.has_ehr_system is not None else payload.has_ehr)
+    therapist.has_ehr = has_ehr_val
+    therapist.ehr_vendor = (payload.ehr_vendor_name or payload.ehr_vendor) if has_ehr_val else None
+    therapist.ehr_product_name = payload.ehr_product_name if has_ehr_val else None
+
+    # HIPAA & Compliance
+    therapist.handles_phi = bool(payload.handles_phi)
+    hipaa_val = bool(payload.hipaa_training_completed)
+    therapist.hipaa_training_completed = hipaa_val
+    therapist.hipaa_training_completion_date = (payload.hipaa_completion_date or payload.hipaa_training_completion_date) if hipaa_val else None
+    malpractice_val = bool(payload.malpractice_insurance_available)
+    therapist.malpractice_insurance_available = malpractice_val
+    therapist.malpractice_insurance_expiration_date = (payload.malpractice_expiration_date or payload.malpractice_insurance_expiration_date) if malpractice_val else None
+    therapist.malpractice_document_url = payload.malpractice_document_url
+
+    therapist.approval_status = "pending"
+    therapist.is_live = True
+
+    db.commit()
+    db.refresh(therapist)
+
+    return {
+        "id": therapist.id,
+        "first_name": therapist.first_name,
+        "last_name": therapist.last_name,
+        "email": therapist.email,
+        "approval_status": therapist.approval_status,
+        "detail": "Therapist registration submitted successfully and pending Admin approval.",
+    }
+
+
+# ==========================================
+# ADMIN THERAPIST MANAGEMENT & APPROVAL ENDPOINTS
+# ==========================================
+@app.get("/admin/therapists")
+def get_admin_therapists(
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin lists therapist applications, optionally filtered by approval status."""
+    query = db.query(TherapistDetails)
+    if status:
+        query = query.filter(TherapistDetails.approval_status == status.strip().lower())
+
+    therapists = query.order_by(TherapistDetails.created_at.desc()).all()
+
+    import json
+    results = []
+    for t in therapists:
+        insurance_arr = []
+        if t.insurance_types:
+            try:
+                insurance_arr = json.loads(t.insurance_types)
+            except Exception:
+                insurance_arr = []
+
+        results.append({
+            "id": t.id,
+            "role_id": t.role_id,
+            "first_name": t.first_name,
+            "last_name": t.last_name,
+            "profile_url": t.profile_url,
+            "email": t.email,
+            "phone": t.phone,
+            "gender": t.gender,
+            "date_of_birth": t.date_of_birth,
+            "address_line_1": t.address_line_1,
+            "address_line_2": t.address_line_2,
+            "city": t.city,
+            "state": t.state,
+            "postal_code": t.postal_code,
+            "country": t.country,
+            # Professional
+            "professional_title": t.professional_title,
+            "therapist_type": t.therapist_type,
+            "professional_biography": t.professional_biography,
+            "years_of_experience": t.years_of_experience,
+            "primary_specialization": t.primary_specialization,
+            "additional_specialization": t.additional_specialization,
+            "language_spoken": t.language_spoken,
+            # School
+            "is_school_associated": t.is_school_associated,
+            "school_id": t.school_id,
+            "school_name": t.school_name,
+            "school_email": t.school_email,
+            "school_phone": t.school_phone,
+            # License
+            "license_type": t.license_type,
+            "license_number": t.license_number,
+            "licensing_state": t.licensing_state,
+            "license_issued_date": t.license_issued_date,
+            "license_expiration_date": t.license_expiration_date,
+            "license_document_url": t.license_document_url,
+            # NPI
+            "has_npi": t.has_npi,
+            "npi_number": t.npi_number,
+            "npi_type": t.npi_type,
+            "provider_taxonomy": t.provider_taxonomy,
+            # Education
+            "highest_qualification": t.highest_qualification,
+            "degree_name": t.degree_name,
+            "field_of_study": t.field_of_study,
+            "university_institution": t.university_institution,
+            "graduation_year": t.graduation_year,
+            "degree_document_url": t.degree_document_url,
+            # Insurance & Billing
+            "accepts_insurance": t.accepts_insurance,
+            "insurance_types": insurance_arr,
+            "accepts_online_payment": t.accepts_online_payment,
+            "has_ehr": t.has_ehr,
+            "ehr_vendor": t.ehr_vendor,
+            "ehr_product_name": t.ehr_product_name,
+            # HIPAA
+            "handles_phi": t.handles_phi,
+            "hipaa_training_completed": t.hipaa_training_completed,
+            "hipaa_training_completion_date": t.hipaa_training_completion_date,
+            "malpractice_insurance_available": t.malpractice_insurance_available,
+            "malpractice_insurance_expiration_date": t.malpractice_insurance_expiration_date,
+            "malpractice_document_url": t.malpractice_document_url,
+            # Status
+            "approval_status": t.approval_status,
+            "is_live": t.is_live,
+            "is_active": t.login.is_active if t.login else False,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+        })
+    return results
+
+
+@app.post("/admin/therapists/{therapist_id}/approve")
+def approve_therapist(
+    therapist_id: int,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin approves therapist, creating/updating login credentials and dispatching approval email."""
+    therapist = db.query(TherapistDetails).filter(TherapistDetails.id == therapist_id).first()
+    if not therapist:
+        raise HTTPException(status_code=404, detail="Therapist not found")
+
+    therapist.approval_status = "approved"
+
+    temp_password = generate_secure_password(12)
+    pwd_hash = hash_password(temp_password)
+
+    if therapist.login:
+        therapist.login.password_hash = pwd_hash
+        therapist.login.is_active = True
+        therapist.login.is_locked = False
+        therapist.login.failed_login_attempts = 0
+    else:
+        therapist_login = TherapistLogin(
+            therapist_id=therapist.id,
+            email_id=therapist.email,
+            password_hash=pwd_hash,
+            is_active=True,
+            is_locked=False,
+        )
+        db.add(therapist_login)
+
+    db.commit()
+
+    send_therapist_approval_credentials_email(
+        therapist_name=f"{therapist.first_name} {therapist.last_name}",
+        therapist_email=therapist.email,
+        temporary_password=temp_password,
+        login_url="http://localhost:3000/therapist/login",
+    )
+
+    return {
+        "id": therapist.id,
+        "approval_status": "approved",
+        "detail": f"Therapist {therapist.first_name} {therapist.last_name} approved successfully. Login credentials sent to {therapist.email}.",
+    }
+
+
+@app.post("/admin/therapists/{therapist_id}/reject")
+def reject_therapist(
+    therapist_id: int,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin rejects therapist application."""
+    therapist = db.query(TherapistDetails).filter(TherapistDetails.id == therapist_id).first()
+    if not therapist:
+        raise HTTPException(status_code=404, detail="Therapist not found")
+
+    therapist.approval_status = "rejected"
+    if therapist.login:
+        therapist.login.is_active = False
+    db.commit()
+
+    return {
+        "id": therapist.id,
+        "approval_status": "rejected",
+        "detail": f"Therapist application for {therapist.first_name} {therapist.last_name} rejected.",
+    }
+
+
+@app.delete("/admin/therapists/{therapist_id}")
+def delete_therapist(
+    therapist_id: int,
+    db: Session = Depends(get_db),
+    admin: AdminDetails = Depends(require_admin),
+):
+    """Admin deletes a therapist profile and associated login."""
+    therapist = db.query(TherapistDetails).filter(TherapistDetails.id == therapist_id).first()
+    if not therapist:
+        raise HTTPException(status_code=404, detail="Therapist not found")
+
+    if therapist.login:
+        db.delete(therapist.login)
+
+    db.delete(therapist)
+    db.commit()
+
+    return {"detail": f"Therapist #{therapist_id} deleted successfully"}
+
+
+@app.delete("/schools/therapists/{therapist_id}")
+def delete_school_therapist(
+    therapist_id: int,
+    db: Session = Depends(get_db),
+    school: SchoolDetails = Depends(get_current_school),
+):
+    """School deletes an affiliated therapist."""
+    therapist = (
+        db.query(TherapistDetails)
+        .filter(TherapistDetails.id == therapist_id, TherapistDetails.school_id == school.id)
+        .first()
+    )
+    if not therapist:
+        raise HTTPException(status_code=404, detail="Therapist not found or not affiliated with your school")
+
+    if therapist.login:
+        db.delete(therapist.login)
+
+    db.delete(therapist)
+    db.commit()
+
+    return {"detail": f"Therapist #{therapist_id} removed successfully"}
+
+
+# ==========================================
+# THERAPIST LOGIN & PORTAL WORKSPACE ENDPOINTS
+# ==========================================
+@app.post("/therapists/login")
+def therapist_login(payload: TherapistLoginRequest, db: Session = Depends(get_db)):
+    """Authenticate Therapist credentials, enforcing 5-attempt lockout policy."""
+    email_clean = payload.email.strip().lower()
+    login_record = db.query(TherapistLogin).filter(TherapistLogin.email_id == email_clean).first()
+
+    if not login_record or not login_record.therapist:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+    if login_record.therapist.approval_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your therapist account has not been approved by the Administrator yet.",
+        )
+
+    now = datetime.now(timezone.utc)
+    locked_until = login_record.locked_until
+    if locked_until and locked_until.tzinfo is None:
+        locked_until = locked_until.replace(tzinfo=timezone.utc)
+
+    if locked_until and locked_until <= now:
+        login_record.is_locked = False
+        login_record.locked_until = None
+        login_record.failed_login_attempts = 0
+        db.commit()
+        locked_until = None
+
+    if login_record.is_locked and locked_until and locked_until > now:
+        remaining_seconds = int((locked_until - now).total_seconds())
+        minutes = max(1, (remaining_seconds + 59) // 60)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Account temporarily locked. Please retry after {minutes} minute(s).",
+        )
+
+    if not verify_password(payload.password, login_record.password_hash):
+        login_record.failed_login_attempts = (login_record.failed_login_attempts or 0) + 1
+        if login_record.failed_login_attempts >= 5:
+            login_record.is_locked = True
+            login_record.locked_until = now + timedelta(minutes=1)
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account temporarily locked for 1 minute due to too many failed attempts.",
+            )
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+    if not login_record.is_active or login_record.is_locked:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Therapist account is inactive or locked")
+
+    login_record.failed_login_attempts = 0
+    login_record.locked_until = None
+    login_record.is_locked = False
+    login_record.last_login = now
+    db.commit()
+
+    access_token = create_access_token(subject=login_record.email_id, role="therapist")
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "redirect_to": "/therapist/dashboard",
+    }
+
+
+@app.get("/therapists/me")
+def get_therapist_me(current_therapist: TherapistDetails = Depends(get_current_therapist)):
+    """Get logged in Therapist profile details."""
+    import json
+    insurance_arr = []
+    if current_therapist.insurance_types:
+        try:
+            insurance_arr = json.loads(current_therapist.insurance_types)
+        except Exception:
+            insurance_arr = []
+
+    return {
+        "id": current_therapist.id,
+        "role_id": current_therapist.role_id,
+        "first_name": current_therapist.first_name,
+        "last_name": current_therapist.last_name,
+        "profile_url": current_therapist.profile_url,
+        "email": current_therapist.email,
+        "phone": current_therapist.phone,
+        "gender": current_therapist.gender,
+        "date_of_birth": current_therapist.date_of_birth,
+        "address_line_1": current_therapist.address_line_1,
+        "address_line_2": current_therapist.address_line_2,
+        "city": current_therapist.city,
+        "state": current_therapist.state,
+        "postal_code": current_therapist.postal_code,
+        "country": current_therapist.country,
+        # Professional
+        "professional_title": current_therapist.professional_title,
+        "therapist_type": current_therapist.therapist_type,
+        "professional_biography": current_therapist.professional_biography,
+        "years_of_experience": current_therapist.years_of_experience,
+        "primary_specialization": current_therapist.primary_specialization,
+        "additional_specialization": current_therapist.additional_specialization,
+        "language_spoken": current_therapist.language_spoken,
+        # School
+        "is_school_associated": current_therapist.is_school_associated,
+        "school_id": current_therapist.school_id,
+        "school_name": current_therapist.school_name,
+        "school_email": current_therapist.school_email,
+        "school_phone": current_therapist.school_phone,
+        # License
+        "license_type": current_therapist.license_type,
+        "license_number": current_therapist.license_number,
+        "licensing_state": current_therapist.licensing_state,
+        "license_issued_date": current_therapist.license_issued_date,
+        "license_expiration_date": current_therapist.license_expiration_date,
+        "license_document_url": current_therapist.license_document_url,
+        # NPI
+        "has_npi": current_therapist.has_npi,
+        "npi_number": current_therapist.npi_number,
+        "npi_type": current_therapist.npi_type,
+        "provider_taxonomy": current_therapist.provider_taxonomy,
+        # Education
+        "highest_qualification": current_therapist.highest_qualification,
+        "degree_name": current_therapist.degree_name,
+        "field_of_study": current_therapist.field_of_study,
+        "university_institution": current_therapist.university_institution,
+        "graduation_year": current_therapist.graduation_year,
+        "degree_document_url": current_therapist.degree_document_url,
+        # Insurance
+        "accepts_insurance": current_therapist.accepts_insurance,
+        "insurance_types": insurance_arr,
+        "accepts_online_payment": current_therapist.accepts_online_payment,
+        "has_ehr": current_therapist.has_ehr,
+        "ehr_vendor": current_therapist.ehr_vendor,
+        "ehr_product_name": current_therapist.ehr_product_name,
+        # HIPAA
+        "handles_phi": current_therapist.handles_phi,
+        "hipaa_training_completed": current_therapist.hipaa_training_completed,
+        "hipaa_training_completion_date": current_therapist.hipaa_training_completion_date,
+        "malpractice_insurance_available": current_therapist.malpractice_insurance_available,
+        "malpractice_insurance_expiration_date": current_therapist.malpractice_insurance_expiration_date,
+        "malpractice_document_url": current_therapist.malpractice_document_url,
+        # Status
+        "approval_status": current_therapist.approval_status,
+        "is_live": current_therapist.is_live,
+        "is_active": current_therapist.login.is_active if current_therapist.login else True,
+    }
+
+
+@app.put("/therapists/me/profile")
+def update_therapist_profile(
+    payload: TherapistProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_therapist: TherapistDetails = Depends(get_current_therapist),
+):
+    """Update profile details for current Therapist."""
+    if payload.first_name is not None and payload.first_name.strip():
+        current_therapist.first_name = payload.first_name.strip()
+    if payload.last_name is not None and payload.last_name.strip():
+        current_therapist.last_name = payload.last_name.strip()
+    if payload.phone is not None:
+        current_therapist.phone = payload.phone.strip()
+    if payload.gender is not None:
+        current_therapist.gender = payload.gender
+    if payload.date_of_birth is not None:
+        current_therapist.date_of_birth = payload.date_of_birth
+    if payload.address_line_1 is not None:
+        current_therapist.address_line_1 = payload.address_line_1
+    if payload.address_line_2 is not None:
+        current_therapist.address_line_2 = payload.address_line_2
+    if payload.city is not None:
+        current_therapist.city = payload.city
+    if payload.state is not None:
+        current_therapist.state = payload.state
+    if payload.postal_code is not None:
+        current_therapist.postal_code = payload.postal_code
+    if payload.country is not None:
+        current_therapist.country = payload.country
+
+    if payload.professional_title is not None:
+        current_therapist.professional_title = payload.professional_title
+    if payload.therapist_type is not None:
+        current_therapist.therapist_type = payload.therapist_type
+    if payload.professional_biography is not None:
+        current_therapist.professional_biography = payload.professional_biography
+    if payload.years_of_experience is not None:
+        current_therapist.years_of_experience = payload.years_of_experience
+    if payload.primary_specialization is not None:
+        current_therapist.primary_specialization = payload.primary_specialization
+    if payload.additional_specialization is not None:
+        current_therapist.additional_specialization = payload.additional_specialization
+    if payload.language_spoken is not None:
+        current_therapist.language_spoken = payload.language_spoken
+
+    db.commit()
+    db.refresh(current_therapist)
+
+    return get_therapist_me(current_therapist)
+
+
+@app.put("/therapists/me/password")
+def change_therapist_password(
+    payload: TherapistPasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_therapist: TherapistDetails = Depends(get_current_therapist),
+):
+    """Change current Therapist password."""
+    if not current_therapist.login or not verify_password(payload.current_password, current_therapist.login.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect current password")
+
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be at least 6 characters long")
+
+    current_therapist.login.password_hash = hash_password(payload.new_password)
+    current_therapist.login.is_first_time_password_changed = True
+    current_therapist.login.password_changed_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"detail": "Password updated successfully"}
+

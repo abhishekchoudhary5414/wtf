@@ -1,0 +1,590 @@
+.register-shell {
+  min-height: calc(100vh - 74px);
+  background: linear-gradient(180deg, #fbf7fc 0%, #f4ecf8 100%);
+  padding: 40px 16px 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.register-container {
+  width: min(100%, 960px);
+  background: #ffffff;
+  border: 1px solid rgba(119, 0, 143, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(119, 0, 143, 0.12);
+  padding: 40px;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brand-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #7700aa, #a34cc3);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(119, 0, 143, 0.25);
+}
+
+.register-header h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: #2b003d;
+}
+
+.register-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 1.02rem;
+}
+
+/* Invitation Banner */
+.invited-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f7ebfc;
+  border: 1px solid #e2bcfa;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  color: #590080;
+  font-size: 0.95rem;
+}
+
+/* Progress Step Bar */
+.progress-bar-container {
+  margin-bottom: 32px;
+}
+
+.progress-bar-track {
+  height: 8px;
+  background: #f3e8f8;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7700aa, #a34cc3);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+/* Registration Tabs Row */
+.tabs-navigation {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #f3e8f8;
+  padding-bottom: 12px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: #faf7fc;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #f7ebfc;
+  color: #7700aa;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #7700aa;
+  border-color: #e2bcfa;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(119, 0, 143, 0.1);
+}
+
+.tab-btn.completed {
+  color: #198754;
+}
+
+.tab-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e2bcfa;
+  color: #7700aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.tab-btn.active .tab-badge {
+  background: #7700aa;
+  color: #ffffff;
+}
+
+.tab-btn.completed .tab-badge {
+  background: #198754;
+  color: #ffffff;
+}
+
+/* Section Card inside active tab */
+.section-card {
+  background: #ffffff;
+  border: 1px solid #efe3f5;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(119, 0, 143, 0.04);
+}
+
+.section-title {
+  margin: 0 0 24px;
+  font-size: 1.25rem;
+  color: #2b003d;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7700aa, #a34cc3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* Grid & Form Inputs */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group.span-2 {
+  grid-column: span 2;
+}
+
+.field-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid #dcd2e2;
+  background: #ffffff;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  color: #1f2937;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field-group textarea {
+  padding: 12px 16px;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+  outline: none;
+  border-color: #7700aa;
+  box-shadow: 0 0 0 4px rgba(119, 0, 143, 0.1);
+}
+
+.field-group input:disabled,
+.field-group select:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-group input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #7700aa;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+
+.checkbox-group label.disabled {
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.locked-notice {
+  font-size: 0.82rem;
+  color: #7700aa;
+  font-weight: 600;
+}
+
+/* Custom Attractive Insurance Dropdown Selector */
+.attractive-dropdown-container {
+  position: relative;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.attractive-dropdown-trigger {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1.5px solid #dcd2e2;
+  background: #ffffff;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(119, 0, 143, 0.04);
+  transition: all 0.2s ease;
+}
+
+.attractive-dropdown-trigger:hover,
+.attractive-dropdown-trigger.open {
+  border-color: #7700aa;
+  box-shadow: 0 0 0 4px rgba(119, 0, 143, 0.12);
+}
+
+.dropdown-trigger-text {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-selected-count {
+  background: #7700aa;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.dropdown-menu-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2bcfa;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(119, 0, 143, 0.18);
+  z-index: 100;
+  padding: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.dropdown-item-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: #374151;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-item-option:hover {
+  background: #f7ebfc;
+  color: #7700aa;
+}
+
+.dropdown-item-option.selected {
+  background: #f0daf8;
+  color: #7700aa;
+  font-weight: 700;
+}
+
+.selected-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.insurance-pill-vibrant {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #7700aa, #a34cc3);
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(119, 0, 143, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.insurance-pill-vibrant:hover {
+  transform: translateY(-1px);
+}
+
+.insurance-pill-vibrant button {
+  background: rgba(255, 255, 255, 0.25);
+  border: 0;
+  color: #ffffff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.insurance-pill-vibrant button:hover {
+  background: #dc2626;
+}
+
+/* Practice Setup Feature Cards */
+.practice-card-feature {
+  background: #faf7fc;
+  border: 1px solid #efe3f5;
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.practice-card-feature:hover {
+  border-color: #e2bcfa;
+  box-shadow: 0 4px 14px rgba(119, 0, 143, 0.05);
+}
+
+/* Document Upload Widget */
+.upload-box-card {
+  background: #faf7fc;
+  border: 2px dashed #dcd2e2;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.upload-box-card:hover {
+  border-color: #7700aa;
+  background: #f7ebfc;
+}
+
+.upload-box-card input[type='file'] {
+  display: none;
+}
+
+.btn-upload-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid #7700aa;
+  background: #ffffff;
+  color: #7700aa;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-upload-file:hover {
+  background: #7700aa;
+  color: #ffffff;
+}
+
+.doc-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #d1e7dd;
+  color: #0f5132;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Tab Controls Navigation Row */
+.tab-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px solid #f3e8f8;
+}
+
+.btn-tab-prev {
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: 1px solid #dcd2e2;
+  background: #ffffff;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-tab-prev:hover {
+  background: #faf7fc;
+  color: #7700aa;
+}
+
+.btn-tab-next {
+  padding: 10px 26px;
+  border-radius: 12px;
+  border: 0;
+  background: linear-gradient(135deg, #7700aa, #a34cc3);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(119, 0, 143, 0.2);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn-tab-next:hover {
+  background: #590080;
+  transform: translateY(-2px);
+}
+
+.btn-register-submit {
+  padding: 12px 32px;
+  border-radius: 12px;
+  border: 0;
+  background: linear-gradient(135deg, #198754, #157347);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(25, 135, 84, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.btn-register-submit:hover {
+  transform: translateY(-2px);
+}
+
+.btn-register-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Success Card */
+.success-card {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: #198754;
+  margin-bottom: 16px;
+}
+
+.success-card h2 {
+  font-size: 1.8rem;
+  color: #2b003d;
+  margin-bottom: 12px;
+}
+
+.success-card p {
+  color: #4b5563;
+  max-width: 550px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.btn-back-login {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7700aa, #a34cc3);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(119, 0, 143, 0.2);
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    padding: 24px 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-group.span-2 {
+    grid-column: span 1;
+  }
+}

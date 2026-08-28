@@ -1,42 +1,54 @@
 import os
 from datetime import datetime, timezone
-
-os.environ["DATABASE_URL"] = "sqlite:///./test_school_lockout.db"
-
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, SessionLocal, engine
+from app.database import Base, get_db
 from app.main import app
 from app.models import Role, SchoolDetails, SchoolLogin
 from app.security import hash_password
 
+TEST_DATABASE_URL = "sqlite:///./test_school_lockout.db"
+engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def setup_module():
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    app.dependency_overrides[get_db] = override_get_db
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
-    db = SessionLocal()
+    db = TestingSessionLocal()
     try:
         role = Role(id=2, role_name="school", description="school role")
         db.add(role)
         db.commit()
-        db.refresh(role)
 
         school = SchoolDetails(
             id=1,
-            role_id=role.id,
+            role_id=2,
             name="Test School",
             email="school@test.com",
             is_live=True,
         )
         db.add(school)
         db.commit()
-        db.refresh(school)
 
         db.add(
             SchoolLogin(
                 id=1,
-                school_id=school.id,
+                school_id=1,
                 email_id="school@test.com",
                 password_hash=hash_password("SchoolPass!1"),
                 is_active=True,
@@ -48,6 +60,16 @@ def setup_module():
         db.commit()
     finally:
         db.close()
+
+    yield
+
+    app.dependency_overrides.clear()
+    engine.dispose()
+    if os.path.exists("./test_school_lockout.db"):
+        try:
+            os.remove("./test_school_lockout.db")
+        except Exception:
+            pass
 
 
 def test_school_login_locks_after_five_failed_attempts():
@@ -61,7 +83,7 @@ def test_school_login_locks_after_five_failed_attempts():
     assert locked_resp.status_code == 403
     assert "locked" in locked_resp.json()["detail"].lower()
 
-    db = SessionLocal()
+    db = TestingSessionLocal()
     try:
         login_record = db.query(SchoolLogin).filter(SchoolLogin.email_id == "school@test.com").first()
         assert login_record is not None
