@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import AvatarViewer from '../AvatarViewer/AvatarViewer';
 import { avatarCategories, AvatarConfigType } from './avatarConfig';
+import './AvatarEditor.css';
 
 interface AvatarEditorProps {
   initialConfig: AvatarConfigType;
@@ -24,47 +25,37 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
   const activeCategoryData = avatarCategories.find(c => c.id === activeCategory);
 
   return (
-    <div className="avatar-editor-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+    <div className="avatar-editor-wrapper">
       
       {/* Top section: Preview & Save */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <AvatarViewer config={config} size={100} />
+      <div className="avatar-preview-header">
+        <div className="avatar-preview-info">
+          <AvatarViewer config={config} size={80} />
           <div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Your Custom Avatar</h3>
-            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>Mix and match to create your look.</p>
+            <h3>Your Custom Avatar</h3>
+            <p>Mix and match to create your look.</p>
           </div>
         </div>
         <button 
           onClick={() => onSave(config)} 
           className="btn-primary" 
           disabled={saving}
-          style={{ padding: '10px 24px', fontSize: '1rem', cursor: saving ? 'not-allowed' : 'pointer' }}
+          style={{ cursor: saving ? 'not-allowed' : 'pointer' }}
         >
           {saving ? 'Saving...' : 'Save Avatar'}
         </button>
       </div>
 
       {/* Editor Section */}
-      <div style={{ display: 'flex', gap: '24px', minHeight: '350px' }}>
+      <div className="avatar-editor-main">
         
         {/* Categories Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '200px' }}>
+        <div className="avatar-sidebar">
           {avatarCategories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              style={{
-                textAlign: 'left',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                background: activeCategory === cat.id ? '#f4e8fb' : 'transparent',
-                color: activeCategory === cat.id ? '#77008f' : '#4b5563',
-                fontWeight: activeCategory === cat.id ? '600' : '400',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
+              className={`avatar-category-btn ${activeCategory === cat.id ? 'active' : ''}`}
             >
               {cat.name}
             </button>
@@ -72,14 +63,14 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
         </div>
 
         {/* Options Grid */}
-        <div style={{ flex: 1, background: '#f9fafb', borderRadius: '12px', padding: '24px', border: '1px solid #e5e7eb' }}>
-          <h4 style={{ margin: '0 0 16px 0' }}>Select {activeCategoryData?.name}</h4>
+        <div className="avatar-options-grid">
+          <h4>Select {activeCategoryData?.name}</h4>
           
           {activeCategoryData && activeCategoryData.options.length === 0 && (
             <p style={{ color: '#6b7280' }}>No options available yet for this category.</p>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '16px' }}>
+          <div className="options-grid-container">
             {activeCategoryData?.options.map((option) => {
               const isSelected = config[activeCategoryData.id] === option;
               
@@ -93,17 +84,7 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
                 <button
                   key={option}
                   onClick={() => handleSelectOption(activeCategoryData.id, option)}
-                  style={{
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: `2px solid ${isSelected ? '#77008f' : '#e5e7eb'}`,
-                    background: '#fff',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
+                  className={`avatar-option-btn ${isSelected ? 'selected' : ''}`}
                 >
                   {/* Small preview of the individual part */}
                   <div style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}>

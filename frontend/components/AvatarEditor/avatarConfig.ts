@@ -17,6 +17,7 @@ export const avatarCategories: AvatarCategory[] = [
   { id: 'eyebrows', name: 'Eyebrows', folder: '04_eyebrows', zIndex: 60, options: ['eyebrow_01.svg'] },
   { id: 'nose', name: 'Nose', folder: '03_nose', zIndex: 70, options: ['nose_01.svg'] },
   { id: 'mouth', name: 'Mouth', folder: '02_mouth', zIndex: 80, options: ['mouth_01.svg'] },
+  { id: 'mustache', name: 'Mustache', folder: '12_mustache', zIndex: 85, options: ['mustache_01.svg'] },
   { id: 'hair', name: 'Hair', folder: '01_hair', zIndex: 90, options: ['hair_01.svg', 'hair_02.svg', 'hair_03.svg', 'hair_04.svg'] },
 ];
 
