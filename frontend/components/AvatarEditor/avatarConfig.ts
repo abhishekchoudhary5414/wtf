@@ -81,7 +81,7 @@ export const avatarCategories: AvatarCategory[] = [
     folder: '01_hair', 
     zIndex: 90, 
     options: { 
-      male: ['hair_01.svg', 'hair_02.svg', 'hair_03.svg', 'hair_04.svg'],
+      male: ['hair_01.svg', 'hair_02.svg', 'hair_03.svg', 'hair_04.svg', 'hair_05.svg', 'hair_06.svg', 'hair_07.svg', 'hair_08.svg', 'hair_09.svg', 'hair_10.svg', 'hair_11.svg', 'hair_12.svg', 'hair_13.svg', 'hair_14.svg', 'hair_15.svg', 'hair_16.svg', 'hair_17.svg', 'hair_18.svg'],
       female: ['hair_01.svg', 'hair_02.svg']
     } 
   },
@@ -109,3 +109,5 @@ export const defaultFemaleConfig: AvatarConfigType = avatarCategories.reduce(
   },
   { gender: 'female' } as AvatarConfigType
 );
+
+
