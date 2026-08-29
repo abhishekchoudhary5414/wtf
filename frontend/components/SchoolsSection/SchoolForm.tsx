@@ -41,14 +41,7 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
     name: '',
     email: '',
     phone: '',
-    profile_url: '',
     type: 'School',
-    address_line_1: '',
-    address_line_2: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: 'United States',
   });
 
   const [institutionTypes, setInstitutionTypes] = useState<DropdownOption[]>([]);
@@ -147,14 +140,7 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
         name: '',
         email: '',
         phone: '',
-        profile_url: '',
         type: 'School',
-        address_line_1: '',
-        address_line_2: '',
-        city: '',
-        state: '',
-        postal_code: '',
-        country: 'United States',
       });
       setErrors({});
     } finally {
@@ -246,25 +232,8 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
               />
             </div>
 
-            {/* Profile URL */}
-            <div className="form-group">
-              <label htmlFor="profile_url" className="form-label">
-                Logo / Profile Image URL
-              </label>
-              <input
-                id="profile_url"
-                type="text"
-                name="profile_url"
-                className="form-input"
-                placeholder="https://example.com/logo.png"
-                value={formData.profile_url}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
             {/* Institution Type Dropdown + Admin Manage Option */}
-            <div className="form-group span-2">
+            <div className="form-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                 <label htmlFor="school-type" className="form-label" style={{ margin: 0 }}>
                   Institution Type *
@@ -274,7 +243,7 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
                   className="btn-manage-dropdown"
                   onClick={() => setShowTypeManager((prev) => !prev)}
                 >
-                  <SettingsIcon style={{ fontSize: 16 }} /> {showTypeManager ? 'Hide Manager' : 'Manage Dropdown Options'}
+                  <SettingsIcon style={{ fontSize: 16 }} /> {showTypeManager ? 'Hide' : 'Manage'}
                 </button>
               </div>
 
@@ -298,9 +267,11 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
                       </option>
                     ))}
               </select>
+            </div>
 
-              {/* Admin Institution Type Manager Dropdown Panel */}
-              {showTypeManager && (
+            {/* Admin Institution Type Manager Dropdown Panel */}
+            {showTypeManager && (
+              <div className="form-group span-2">
                 <div className="dropdown-manager-box">
                   <h4 style={{ margin: '0 0 10px', fontSize: '0.9rem', color: '#2b003d' }}>
                     Manage Institution Types (Admin Control)
@@ -337,102 +308,8 @@ export default function SchoolForm({ onSubmit, isLoading }: SchoolFormProps) {
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Address Line 1 */}
-            <div className="form-group span-2">
-              <label htmlFor="address_line_1" className="form-label">
-                Address Line 1
-              </label>
-              <input
-                id="address_line_1"
-                type="text"
-                name="address_line_1"
-                className="form-input"
-                placeholder="Street address or P.O. Box"
-                value={formData.address_line_1}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
-            {/* Address Line 2 */}
-            <div className="form-group span-2">
-              <label htmlFor="address_line_2" className="form-label">
-                Address Line 2
-              </label>
-              <input
-                id="address_line_2"
-                type="text"
-                name="address_line_2"
-                className="form-input"
-                placeholder="Suite, building, floor"
-                value={formData.address_line_2}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
-            {/* City */}
-            <div className="form-group">
-              <label htmlFor="city" className="form-label">City</label>
-              <input
-                id="city"
-                type="text"
-                name="city"
-                className="form-input"
-                placeholder="City"
-                value={formData.city}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
-            {/* State */}
-            <div className="form-group">
-              <label htmlFor="state" className="form-label">State / Province</label>
-              <input
-                id="state"
-                type="text"
-                name="state"
-                className="form-input"
-                placeholder="State"
-                value={formData.state}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
-            {/* Postal Code */}
-            <div className="form-group">
-              <label htmlFor="postal_code" className="form-label">Postal Code</label>
-              <input
-                id="postal_code"
-                type="text"
-                name="postal_code"
-                className="form-input"
-                placeholder="Zip / Postal code"
-                value={formData.postal_code}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-
-            {/* Country */}
-            <div className="form-group">
-              <label htmlFor="country" className="form-label">Country</label>
-              <input
-                id="country"
-                type="text"
-                name="country"
-                className="form-input"
-                placeholder="Country"
-                value={formData.country}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="form-actions" style={{ marginTop: 20 }}>

@@ -36,6 +36,7 @@ class AdminProfileResponse(BaseModel):
     last_name: str
     email_id: str
     mobile_number: Optional[str] = None
+    profile_url: Optional[str] = None
     role_name: str
     is_live: bool
     is_active: bool
@@ -46,6 +47,7 @@ class AdminProfileUpdateRequest(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     mobile_number: Optional[str] = None
+    profile_url: Optional[str] = None
 
     @field_validator("mobile_number")
     @classmethod

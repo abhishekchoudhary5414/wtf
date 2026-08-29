@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { authApi, getToken, AdminAccount } from '@/lib/api';
 import { Visibility, VisibilityOff, Lock, CheckCircle, ErrorOutline } from '@mui/icons-material';
+import AvatarEditor from '../AvatarEditor/AvatarEditor';
+import { defaultAvatarConfig, AvatarConfigType } from '../AvatarEditor/avatarConfig';
 import './AccountSection.css';
 
 export default function AccountSection() {
@@ -15,6 +17,10 @@ export default function AccountSection() {
   const [mobileNumber, setMobileNumber] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [toast, setToast] = useState({ show: false, type: '', message: '' });
+
+  // Avatar State
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarConfig, setAvatarConfig] = useState<AvatarConfigType>(defaultAvatarConfig);
 
   // Password Form State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -47,6 +53,15 @@ export default function AccountSection() {
       setFirstName(data.first_name || '');
       setLastName(data.last_name || '');
       setMobileNumber(data.mobile_number || '');
+      
+      if (data.profile_url) {
+        try {
+          const config = JSON.parse(data.profile_url);
+          setAvatarConfig(config);
+        } catch (e) {
+          console.error('Failed to parse avatar config', e);
+        }
+      }
     } catch (error) {
       console.error('Failed to load account data', error);
     } finally {
@@ -74,6 +89,27 @@ export default function AccountSection() {
       showToast('error', error.message || 'Failed to update profile');
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const handleAvatarSave = async (config: AvatarConfigType) => {
+    setAvatarSaving(true);
+    try {
+      const token = getToken();
+      if (!token) throw new Error('No token');
+      
+      const payload = {
+        profile_url: JSON.stringify(config),
+      };
+      
+      const updatedAccount = await authApi.updateAdminAccountProfile(token, payload);
+      setAccount(updatedAccount);
+      setAvatarConfig(config);
+      showToast('success', 'Avatar updated successfully!');
+    } catch (error: any) {
+      showToast('error', error.message || 'Failed to update avatar');
+    } finally {
+      setAvatarSaving(false);
     }
   };
 
@@ -220,6 +256,22 @@ export default function AccountSection() {
                 </button>
               </div>
             </form>
+          </div>
+        </section>
+
+        {/* Avatar Card */}
+        <section className="settings-card">
+          <div className="settings-card-header">
+            <h2>Custom Avatar</h2>
+            <p>Design your unique admin avatar.</p>
+          </div>
+          
+          <div className="settings-card-body">
+            <AvatarEditor 
+              initialConfig={avatarConfig} 
+              onSave={handleAvatarSave} 
+              saving={avatarSaving} 
+            />
           </div>
         </section>
 

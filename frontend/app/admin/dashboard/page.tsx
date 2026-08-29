@@ -7,6 +7,8 @@ import { Menu, Close, Logout } from '@mui/icons-material';
 import SchoolsSection from '@/components/SchoolsSection/SchoolsSection';
 import AccountSection from '@/components/AccountSection/AccountSection';
 import AdminTherapistsSection from '@/components/TherapistsSection/AdminTherapistsSection';
+import AvatarViewer from '@/components/AvatarViewer/AvatarViewer';
+import { AvatarConfigType } from '@/components/AvatarEditor/avatarConfig';
 import './dashboard.css';
 
 type NavigationSection = 'overview' | 'account' | 'schools' | 'users' | 'therapists' | 'specialities';
@@ -78,8 +80,18 @@ export default function AdminDashboardPage() {
     window.location.href = '/admin/login';
   };
 
-  const adminFirstName = adminAccounts[0]?.first_name || 'Admin';
+  const adminAccount = adminAccounts[0];
+  const adminFirstName = adminAccount?.first_name || 'Admin';
   const initialLetter = adminFirstName.charAt(0).toUpperCase();
+
+  let avatarConfig: AvatarConfigType | null = null;
+  if (adminAccount?.profile_url) {
+    try {
+      avatarConfig = JSON.parse(adminAccount.profile_url);
+    } catch (e) {
+      // ignore
+    }
+  }
 
   return (
     <main className="dashboard-shell">
@@ -87,7 +99,13 @@ export default function AdminDashboardPage() {
         <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
           <div className="sidebar-brand-row">
             <div className="sidebar-brand">
-              <span className="sidebar-brand-mark">{initialLetter}</span>
+              {avatarConfig ? (
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarViewer config={avatarConfig} size={38} />
+                </div>
+              ) : (
+                <span className="sidebar-brand-mark">{initialLetter}</span>
+              )}
               <span>{adminFirstName}</span>
             </div>
             <button

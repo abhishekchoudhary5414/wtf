@@ -312,6 +312,7 @@ def get_me(current_admin: AdminDetails = Depends(require_admin)):
         "last_name": current_admin.last_name,
         "email_id": current_admin.email_id,
         "mobile_number": current_admin.mobile_number,
+        "profile_url": current_admin.profile_url,
         "role_name": current_admin.role.role_name,
         "is_live": current_admin.is_live,
         "is_active": current_admin.login.is_active,
@@ -327,6 +328,7 @@ def get_admin_account(current_admin: AdminDetails = Depends(require_admin)):
         "last_name": current_admin.last_name,
         "email_id": current_admin.email_id,
         "mobile_number": current_admin.mobile_number,
+        "profile_url": current_admin.profile_url,
         "role_name": current_admin.role.role_name,
         "is_live": current_admin.is_live,
         "is_active": current_admin.login.is_active,
@@ -366,6 +368,9 @@ def update_admin_profile(
         else:
             current_admin.mobile_number = None
 
+    if payload.profile_url is not None:
+        current_admin.profile_url = payload.profile_url
+
     db.commit()
     db.refresh(current_admin)
 
@@ -375,6 +380,7 @@ def update_admin_profile(
         "last_name": current_admin.last_name,
         "email_id": current_admin.email_id,
         "mobile_number": current_admin.mobile_number,
+        "profile_url": current_admin.profile_url,
         "role_name": current_admin.role.role_name,
         "is_live": current_admin.is_live,
         "is_active": current_admin.login.is_active,
