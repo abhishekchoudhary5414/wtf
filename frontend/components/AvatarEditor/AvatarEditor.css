@@ -73,7 +73,39 @@
 }
 
 .avatar-options-grid h4 {
-  margin: 0 0 16px 0;
+  margin: 0;
+}
+
+.avatar-options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.gender-toggle {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.gender-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gender-btn.active {
+  background: #fff;
+  color: #7700aa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .options-grid-container {

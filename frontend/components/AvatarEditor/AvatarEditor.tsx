@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import AvatarViewer from '../AvatarViewer/AvatarViewer';
-import { avatarCategories, AvatarConfigType } from './avatarConfig';
+import { avatarCategories, AvatarConfigType, AvatarGender, defaultMaleConfig, defaultFemaleConfig } from './avatarConfig';
 import './AvatarEditor.css';
 
 interface AvatarEditorProps {
@@ -12,7 +12,9 @@ interface AvatarEditorProps {
 }
 
 export default function AvatarEditor({ initialConfig, onSave, saving = false }: AvatarEditorProps) {
-  const [config, setConfig] = useState<AvatarConfigType>(initialConfig);
+  // Ensure config has a gender, default to male if migrating from old format
+  const startingConfig = initialConfig.gender ? initialConfig : { ...defaultMaleConfig, ...initialConfig, gender: 'male' as AvatarGender };
+  const [config, setConfig] = useState<AvatarConfigType>(startingConfig);
   const [activeCategory, setActiveCategory] = useState<string>(avatarCategories[0].id);
 
   const handleSelectOption = (categoryId: string, optionFile: string) => {
@@ -22,7 +24,14 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
     }));
   };
 
+  const handleGenderChange = (newGender: AvatarGender) => {
+    if (config.gender === newGender) return;
+    const newConfig = newGender === 'female' ? defaultFemaleConfig : defaultMaleConfig;
+    setConfig(newConfig);
+  };
+
   const activeCategoryData = avatarCategories.find(c => c.id === activeCategory);
+  const currentOptions = activeCategoryData ? activeCategoryData.options[config.gender] : [];
 
   return (
     <div className="avatar-editor-wrapper">
@@ -51,39 +60,65 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
         
         {/* Categories Sidebar */}
         <div className="avatar-sidebar">
-          {avatarCategories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`avatar-category-btn ${activeCategory === cat.id ? 'active' : ''}`}
-            >
-              {cat.name}
-            </button>
-          ))}
+          {avatarCategories.map((cat) => {
+            // Hide category if it has no options for the selected gender (e.g. mustache for female)
+            if (cat.options[config.gender].length === 0) return null;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`avatar-category-btn ${activeCategory === cat.id ? 'active' : ''}`}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
         </div>
 
         {/* Options Grid */}
         <div className="avatar-options-grid">
-          <h4>Select {activeCategoryData?.name}</h4>
           
-          {activeCategoryData && activeCategoryData.options.length === 0 && (
+          {/* Gender Toggle & Header */}
+          <div className="avatar-options-header">
+            <h4>Select {activeCategoryData?.name}</h4>
+            <div className="gender-toggle">
+              <button 
+                className={`gender-btn ${config.gender === 'male' ? 'active' : ''}`}
+                onClick={() => handleGenderChange('male')}
+              >
+                Male
+              </button>
+              <button 
+                className={`gender-btn ${config.gender === 'female' ? 'active' : ''}`}
+                onClick={() => handleGenderChange('female')}
+              >
+                Female
+              </button>
+            </div>
+          </div>
+          
+          {currentOptions.length === 0 && (
             <p style={{ color: '#6b7280' }}>No options available yet for this category.</p>
           )}
 
           <div className="options-grid-container">
-            {activeCategoryData?.options.map((option) => {
-              const isSelected = config[activeCategoryData.id] === option;
+            {currentOptions.map((option) => {
+              const isSelected = config[activeCategoryData!.id] === option;
               
               // To preview just this feature, we create a temporary config that shows the default body + this feature
-              const previewConfig: AvatarConfigType = { body: 'body_01.svg', [activeCategoryData.id]: option };
-              if (activeCategoryData.id !== 'body' && activeCategoryData.id !== 'face') {
+              const previewConfig: AvatarConfigType = { 
+                gender: config.gender,
+                body: 'body_01.svg', 
+                [activeCategoryData!.id]: option 
+              };
+              if (activeCategoryData!.id !== 'body' && activeCategoryData!.id !== 'face') {
                 previewConfig.face = 'face_01.svg'; // Show face context for features
               }
 
               return (
                 <button
                   key={option}
-                  onClick={() => handleSelectOption(activeCategoryData.id, option)}
+                  onClick={() => handleSelectOption(activeCategoryData!.id, option)}
                   className={`avatar-option-btn ${isSelected ? 'selected' : ''}`}
                 >
                   {/* Small preview of the individual part */}

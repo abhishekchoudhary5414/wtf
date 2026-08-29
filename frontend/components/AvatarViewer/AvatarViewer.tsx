@@ -27,7 +27,8 @@ export default function AvatarViewer({ config, size = 150 }: AvatarViewerProps) 
         const selectedFile = config[category.id];
         if (!selectedFile) return null;
 
-        const assetPath = `/avatar/${category.folder}/${selectedFile}`;
+        const genderPath = config.gender === 'female' ? 'femaleavatar' : 'maleavatar';
+        const assetPath = `/avatar/${genderPath}/${category.folder}/${selectedFile}`;
 
         return (
           <img

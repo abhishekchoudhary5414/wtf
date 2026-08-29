@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { authApi, getToken, AdminAccount } from '@/lib/api';
 import { Visibility, VisibilityOff, Lock, CheckCircle, ErrorOutline } from '@mui/icons-material';
 import AvatarEditor from '../AvatarEditor/AvatarEditor';
-import { defaultAvatarConfig, AvatarConfigType } from '../AvatarEditor/avatarConfig';
+import { defaultMaleConfig, AvatarConfigType } from '../AvatarEditor/avatarConfig';
 import './AccountSection.css';
 
 export default function AccountSection() {
@@ -20,7 +20,7 @@ export default function AccountSection() {
 
   // Avatar State
   const [avatarSaving, setAvatarSaving] = useState(false);
-  const [avatarConfig, setAvatarConfig] = useState<AvatarConfigType>(defaultAvatarConfig);
+  const [avatarConfig, setAvatarConfig] = useState<AvatarConfigType>(defaultMaleConfig);
 
   // Password Form State
   const [currentPassword, setCurrentPassword] = useState('');
