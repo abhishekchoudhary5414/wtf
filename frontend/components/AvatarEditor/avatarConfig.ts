@@ -48,6 +48,16 @@ export const avatarCategories: AvatarCategory[] = [
     options: { male: ['eye_01.svg'], female: ['eye_01.svg'] }
   },
   {
+    id: 'glasses',
+    name: 'Glasses',
+    folder: '12_glasses',
+    zIndex: 55,
+    options: {
+      male: [],
+      female: ['glass_01.svg', 'glass_02.svg', 'glass_03.svg', 'glass_04.svg', 'glass_05.svg', 'glass_06.svg', 'glass_07.svg', 'glass_08.svg', 'glass_09.svg', 'glass_10.svg', 'glass_11.svg', 'glass_12.svg', 'glass_13.svg', 'glass_14.svg', 'glass_15.svg', 'glass_16.svg']
+    }
+  },
+  {
     id: 'eyebrows',
     name: 'Eyebrows',
     folder: '04_eyebrows',
@@ -59,7 +69,10 @@ export const avatarCategories: AvatarCategory[] = [
     name: 'Nose',
     folder: '03_nose',
     zIndex: 70,
-    options: { male: ['nose_01.svg'], female: ['nose_01.svg'] }
+    options: {
+      male: ['nose_01.svg', 'nose_02.svg', 'nose_03.svg', 'nose_04.svg', 'nose_05.svg', 'nose_06.svg', 'nose_07.svg', 'nose_08.svg', 'nose_09.svg', 'nose_10.svg', 'nose_11.svg', 'nose_12.svg', 'nose_13.svg', 'nose_14.svg', 'nose_15.svg', 'nose_16.svg'],
+      female: ['nose_01.svg']
+    }
   },
   {
     id: 'mouth',

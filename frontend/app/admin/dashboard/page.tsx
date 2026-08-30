@@ -11,7 +11,7 @@ import AvatarViewer from '@/components/AvatarViewer/AvatarViewer';
 import { AvatarConfigType } from '@/components/AvatarEditor/avatarConfig';
 import './dashboard.css';
 
-type NavigationSection = 'overview' | 'account' | 'schools' | 'users' | 'therapists' | 'specialities';
+type NavigationSection = 'overview' | 'account' | 'schools' | 'users' | 'therapists' | 'config';
 
 
 
@@ -144,10 +144,10 @@ export default function AdminDashboardPage() {
               Therapists
             </button>
             <button
-              className={`sidebar-link ${activeSection === 'specialities' ? 'active' : ''}`}
-              onClick={() => handleNavClick('specialities')}
+              className={`sidebar-link ${activeSection === 'config' ? 'active' : ''}`}
+              onClick={() => handleNavClick('config')}
             >
-              Specialities
+              Config
             </button>
             <div className="sidebar-divider" style={{ margin: '1rem 0', borderTop: '1px solid #e5e7eb' }}></div>
             <button
@@ -254,11 +254,11 @@ export default function AdminDashboardPage() {
             <AdminTherapistsSection />
           )}
 
-          {activeSection === 'specialities' && (
+          {activeSection === 'config' && (
             <section className="dashboard-content">
               <div className="empty-content-message">
-                <h3>Specialities</h3>
-                <p>Specialities management section coming soon...</p>
+                <h3>Config</h3>
+                <p>Config management section coming soon...</p>
               </div>
             </section>
           )}
