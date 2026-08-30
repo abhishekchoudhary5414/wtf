@@ -259,22 +259,6 @@ export default function AccountSection() {
           </div>
         </section>
 
-        {/* Avatar Card */}
-        <section className="settings-card">
-          <div className="settings-card-header">
-            <h2>Custom Avatar</h2>
-            <p>Design your unique admin avatar.</p>
-          </div>
-          
-          <div className="settings-card-body">
-            <AvatarEditor 
-              initialConfig={avatarConfig} 
-              onSave={handleAvatarSave} 
-              saving={avatarSaving} 
-            />
-          </div>
-        </section>
-
         {/* Password Card */}
         <section className="settings-card">
           <div className="settings-card-header">

@@ -6,12 +6,13 @@ import { authApi, getToken, type AdminAccount } from '@/lib/api';
 import { Menu, Close, Logout } from '@mui/icons-material';
 import SchoolsSection from '@/components/SchoolsSection/SchoolsSection';
 import AccountSection from '@/components/AccountSection/AccountSection';
+import AdminAvatarSection from '@/components/AdminAvatarSection/AdminAvatarSection';
 import AdminTherapistsSection from '@/components/TherapistsSection/AdminTherapistsSection';
 import AvatarViewer from '@/components/AvatarViewer/AvatarViewer';
 import { AvatarConfigType } from '@/components/AvatarEditor/avatarConfig';
 import './dashboard.css';
 
-type NavigationSection = 'overview' | 'account' | 'schools' | 'users' | 'therapists' | 'config';
+type NavigationSection = 'overview' | 'account' | 'avatar' | 'schools' | 'users' | 'therapists' | 'config';
 
 
 
@@ -84,6 +85,19 @@ export default function AdminDashboardPage() {
   const adminFirstName = adminAccount?.first_name || 'Admin';
   const initialLetter = adminFirstName.charAt(0).toUpperCase();
 
+  const handleAvatarUpdated = (config: AvatarConfigType) => {
+    setAdminAccounts((currentAccounts) => {
+      if (!currentAccounts.length) {
+        return currentAccounts;
+      }
+
+      return [{
+        ...currentAccounts[0],
+        profile_url: JSON.stringify(config),
+      }];
+    });
+  };
+
   let avatarConfig: AvatarConfigType | null = null;
   if (adminAccount?.profile_url) {
     try {
@@ -150,6 +164,12 @@ export default function AdminDashboardPage() {
               Config
             </button>
             <div className="sidebar-divider" style={{ margin: '1rem 0', borderTop: '1px solid #e5e7eb' }}></div>
+            <button
+              className={`sidebar-link ${activeSection === 'avatar' ? 'active' : ''}`}
+              onClick={() => handleNavClick('avatar')}
+            >
+              Avatar
+            </button>
             <button
               className={`sidebar-link ${activeSection === 'account' ? 'active' : ''}`}
               onClick={() => handleNavClick('account')}
@@ -261,6 +281,10 @@ export default function AdminDashboardPage() {
                 <p>Config management section coming soon...</p>
               </div>
             </section>
+          )}
+
+          {activeSection === 'avatar' && (
+            <AdminAvatarSection onAvatarUpdated={handleAvatarUpdated} />
           )}
 
           {activeSection === 'account' && (

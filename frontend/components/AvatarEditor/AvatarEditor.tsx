@@ -9,9 +9,10 @@ interface AvatarEditorProps {
   initialConfig: AvatarConfigType;
   onSave: (config: AvatarConfigType) => void;
   saving?: boolean;
+  previewSize?: number;
 }
 
-export default function AvatarEditor({ initialConfig, onSave, saving = false }: AvatarEditorProps) {
+export default function AvatarEditor({ initialConfig, onSave, saving = false, previewSize = 80 }: AvatarEditorProps) {
   // Ensure config has a gender, default to male if migrating from old format
   const startingConfig = initialConfig.gender ? initialConfig : { ...defaultMaleConfig, ...initialConfig, gender: 'male' as AvatarGender };
   const [config, setConfig] = useState<AvatarConfigType>(startingConfig);
@@ -39,7 +40,9 @@ export default function AvatarEditor({ initialConfig, onSave, saving = false }: 
       {/* Top section: Preview & Save */}
       <div className="avatar-preview-header">
         <div className="avatar-preview-info">
-          <AvatarViewer config={config} size={80} />
+          <div className="avatar-preview-badge">
+            <AvatarViewer config={config} size={previewSize} />
+          </div>
           <div>
             <h3>Your Custom Avatar</h3>
             <p>Mix and match to create your look.</p>

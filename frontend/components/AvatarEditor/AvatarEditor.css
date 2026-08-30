@@ -18,7 +18,19 @@
 .avatar-preview-info {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 24px;
+  width: 100%;
+}
+
+.avatar-preview-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f5ebff 0%, #f9fafb 100%);
+  border: 1px solid #e9d5ff;
 }
 
 .avatar-preview-info h3 {
