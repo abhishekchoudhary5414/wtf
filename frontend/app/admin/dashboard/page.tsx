@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="dashboard-shell">
-      <div className="dashboard-layout">
+      <div className={`dashboard-layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
         <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
           <div className="sidebar-brand-row">
             <div className="sidebar-brand">

@@ -21,7 +21,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  transition: all 300ms ease-in-out;
+  transition: width 300ms ease-in-out, transform 300ms ease-in-out, opacity 300ms ease-in-out;
   flex-shrink: 0;
   overflow-x: hidden;
   position: fixed;
@@ -139,6 +139,7 @@
   padding: 28px;
   margin-left: 260px;
   width: calc(100% - 260px);
+  transition: margin-left 300ms ease-in-out, width 300ms ease-in-out;
 }
 
 .sidebar-toggle {
@@ -163,7 +164,7 @@
   pointer-events: none;
 }
 
-.dashboard-layout .dashboard-sidebar.closed + .dashboard-main {
+.dashboard-layout.sidebar-collapsed .dashboard-main {
   margin-left: 0;
   width: 100%;
 }
